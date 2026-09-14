@@ -1,0 +1,8 @@
+{
+  "name": "messagebirds",
+  "private": true,
+  "workspaces": [
+    "sdk/js",
+    "ui"
+  ]
+}

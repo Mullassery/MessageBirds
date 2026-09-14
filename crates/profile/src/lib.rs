@@ -6,7 +6,9 @@
 mod decide;
 mod model;
 mod repo;
+mod similarity;
 
 pub use decide::{decide, Decision};
 pub use model::{FieldProvenance, Profile};
 pub use repo::{PgProfileRepo, ProfileError, ProfileRepo};
+pub use similarity::{score, PersonSignal};

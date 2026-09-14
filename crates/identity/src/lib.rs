@@ -1,7 +1,9 @@
 //! Identity graph: deterministic matching of identity claims to profiles,
-//! with every link and merge recorded in an append-only audit trail.
-//! Probabilistic matching is a later phase — this milestone is exact
-//! (namespace, value) matching only.
+//! with every link, merge, and split recorded in an append-only audit
+//! trail. Resolution itself (`resolve_or_create`) is exact (namespace,
+//! value) matching only — confidence-scored merge *suggestions* based on
+//! non-identity signals live in `mb-profile::similarity` plus a query in
+//! `mb-api`, since they read profile mixin data this crate doesn't have.
 
 mod hash;
 mod model;

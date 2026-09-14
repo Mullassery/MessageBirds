@@ -4,13 +4,13 @@ An open-source, event-driven Customer Data & Engagement Platform. See [`docs/OCD
 
 ## Status
 
-**Phase 1 (foundation)**, in progress. The current milestone proves the canonical data path end-to-end:
+**Phase 2 (identity)**, in progress, on top of the Phase 1 foundation:
 
 ```
 POST /events → schema validation → mixin composition → identity resolution → merge policy → profile projection → GET /profiles/{id}
 ```
 
-Nothing beyond this — no audiences, governance, consent, activation, journeys, decisioning, AI agents, CLI, or UI yet. See `docs/ARCHITECTURE.md` for what's next.
+Phase 2 adds confidence-scored merge suggestions (never automatic), explicit merge/split with an append-only audit trail, and a profile timeline UI (`ui/`). Still nothing on audiences, governance, consent, activation, journeys, decisioning, AI agents, or a CLI. See `docs/ARCHITECTURE.md` for what's next.
 
 ## Architecture (this milestone)
 
@@ -18,13 +18,14 @@ Nothing beyond this — no audiences, governance, consent, activation, journeys,
 - `crates/namespaces` — identity namespace registry
 - `crates/schema-registry` — event schema registry + validation
 - `crates/mixins` — composable profile mixins (standard library + custom)
-- `crates/identity` — identity graph, deterministic matching, audit trail
+- `crates/identity` — identity graph: deterministic matching, explicit merge/split, append-only audit trail
 - `crates/merge-policy` — conflict resolution strategies for profile projection
-- `crates/profile` — unified customer profile projection + field-level provenance
+- `crates/profile` — unified customer profile projection, field-level provenance, merge-suggestion similarity scoring
 - `crates/events` — Kafka/Redpanda producer/consumer wrappers
 - `crates/api` — Axum HTTP server (ingestion + query)
 - `crates/worker` — Kafka consumer pipeline (validate → resolve → merge → project)
-- `sdk/js` — TypeScript client SDK
+- `sdk/js` — TypeScript client SDK, npm-workspace-linked
+- `ui/` — Next.js profile timeline viewer (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
 
 ## Development
 
@@ -40,7 +41,11 @@ DATABASE_URL=postgres://messagebirds:messagebirds@localhost:5432/messagebirds ca
 DATABASE_URL=postgres://messagebirds:messagebirds@localhost:5432/messagebirds cargo run -p worker
 
 # 3. Send a test event and watch the profile materialize
-cd sdk/js && npm install && npm run smoke-test
+npm install   # installs sdk/js and ui workspaces from the repo root
+npm run smoke-test --workspace=sdk/js
+
+# 4. Browse it
+npm run dev --workspace=ui   # http://localhost:3000
 ```
 
 ## License

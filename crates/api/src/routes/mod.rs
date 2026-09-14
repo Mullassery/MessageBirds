@@ -21,6 +21,16 @@ pub fn router(state: AppState) -> Router {
         .route("/profiles/:id", get(profiles::get_profile))
         .route("/profiles/:id/events", get(profiles::get_profile_events))
         .route(
+            "/profiles/:id/identity",
+            get(profiles::get_profile_identity),
+        )
+        .route(
+            "/profiles/:id/merge-suggestions",
+            get(profiles::get_merge_suggestions),
+        )
+        .route("/profiles/:id/merge", post(profiles::merge_profile))
+        .route("/profiles/:id/split", post(profiles::split_profile))
+        .route(
             "/schemas",
             get(schemas::list_schemas).post(schemas::create_schema),
         )

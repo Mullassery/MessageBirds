@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
-  "main": "dist/client.js",
-  "types": "dist/client.d.ts",
+  "main": "src/client.ts",
+  "types": "src/client.ts",
   "scripts": {
     "build": "tsc",
     "smoke-test": "tsx examples/smoke-test.ts"

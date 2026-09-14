@@ -70,7 +70,11 @@ impl From<mb_profile::ProfileError> for ApiError {
 
 impl From<mb_identity::IdentityError> for ApiError {
     fn from(e: mb_identity::IdentityError) -> Self {
-        ApiError::Internal(e.to_string())
+        use mb_identity::IdentityError::*;
+        match e {
+            NotLinked { .. } => ApiError::BadRequest(e.to_string()),
+            Db(_) => ApiError::Internal(e.to_string()),
+        }
     }
 }
 

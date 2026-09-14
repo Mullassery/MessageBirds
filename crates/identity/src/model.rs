@@ -17,20 +17,25 @@ pub struct IdentityNode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "text", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum IdentityAuditKind {
     Linked,
     Merged,
+    Split,
 }
 
 /// Append-only record of every identity graph change. Never updated or
 /// deleted — identity history must stay reconstructable (Section 8).
+///
+/// `namespace`/`value_hash` are `None` for `Merged` entries, which record a
+/// whole-profile merge rather than one identity claim.
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct IdentityAuditEntry {
     pub id: Uuid,
     pub tenant_id: Uuid,
     pub kind: IdentityAuditKind,
-    pub namespace: String,
-    pub value_hash: String,
+    pub namespace: Option<String>,
+    pub value_hash: Option<String>,
     pub profile_id: Uuid,
     pub previous_profile_id: Option<Uuid>,
     pub source: String,

@@ -57,4 +57,15 @@ export class MessageBirdsClient {
   }
 }
 
-export type { EventEnvelope, FieldProvenance, IdentityRef, ProfileView } from "./types.js";
+export type {
+  EventEnvelope,
+  EventSummary,
+  FieldProvenance,
+  IdentityAuditEntry,
+  IdentityAuditKind,
+  IdentityNode,
+  IdentityRef,
+  IdentityView,
+  MergeSuggestion,
+  ProfileView,
+} from "./types.js";
