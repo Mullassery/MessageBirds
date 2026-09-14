@@ -1,0 +1,16 @@
+namespace: core
+name: identity
+version: "1.0"
+fields:
+  anonymous_id:
+    type: string
+    required: false
+  customer_id:
+    type: string
+    required: false
+  crm_id:
+    type: string
+    required: false
+  primary_namespace:
+    type: string
+    required: false

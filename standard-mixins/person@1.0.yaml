@@ -1,0 +1,17 @@
+namespace: core
+name: person
+version: "1.0"
+fields:
+  first_name:
+    type: string
+    required: false
+  last_name:
+    type: string
+    required: false
+  birth_date:
+    type: string
+    required: false
+  gender:
+    type: string
+    required: false
+    enum: ["male", "female", "other", "unspecified"]

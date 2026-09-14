@@ -1,0 +1,17 @@
+namespace: core
+name: device
+version: "1.0"
+fields:
+  device_id:
+    type: string
+    required: false
+  platform:
+    type: string
+    required: false
+    enum: ["ios", "android", "web"]
+  app_version:
+    type: string
+    required: false
+  push_token:
+    type: string
+    required: false

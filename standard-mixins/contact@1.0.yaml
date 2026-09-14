@@ -1,0 +1,13 @@
+namespace: core
+name: contact
+version: "1.0"
+fields:
+  email:
+    type: string
+    required: false
+  phone:
+    type: string
+    required: false
+  address:
+    type: object
+    required: false

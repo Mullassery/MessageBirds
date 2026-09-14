@@ -1,0 +1,17 @@
+[package]
+name = "mb-namespaces"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+async-trait.workspace = true
+sqlx.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
