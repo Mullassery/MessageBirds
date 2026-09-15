@@ -11,6 +11,7 @@ members = [
     "crates/events",
     "crates/audiences",
     "crates/connectors",
+    "crates/governance",
     "crates/api",
     "crates/worker",
 ]
@@ -47,3 +48,4 @@ mb-profile = { path = "crates/profile" }
 mb-events = { path = "crates/events" }
 mb-audiences = { path = "crates/audiences" }
 mb-connectors = { path = "crates/connectors" }
+mb-governance = { path = "crates/governance" }

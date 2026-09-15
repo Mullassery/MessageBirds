@@ -4,32 +4,35 @@ An open-source, event-driven Customer Data & Engagement Platform. See [`docs/OCD
 
 ## Status
 
-**Phase 3 (CDP)**, in progress, on top of Phases 1–2:
+**Phase 4 (governance)**, in progress, on top of Phases 1–3:
 
 ```
 POST /events → schema validation → mixin composition → identity resolution → merge policy → profile projection
                                                                                      ↓
-                                                            real-time audience evaluation → activation (webhook)
+                                                            real-time audience evaluation
+                                                                                     ↓
+                                          governed activation (label policy + consent + destination capability) → webhook
 ```
 
-Phase 3 adds rule-based audiences (attribute + event conditions, AND/OR/NOT) evaluated in real time as profiles update, one webhook destination connector with an activation audit log, a data quality dashboard, and a field lineage view — all in `ui/` alongside the Phase 2 profile viewer. Still nothing on governance, consent, journeys, decisioning, AI agents, a CLI, or connectors beyond webhook. See `docs/ARCHITECTURE.md` for the full picture of what's built vs. deferred and why.
+Phase 4 adds governance labels on mixin fields, a deny-list policy engine, an append-only consent ledger, per-profile governed activation (every send checked and explained, not silently allowed or blocked), and a policy simulator whose answer is guaranteed to match real activation since it reuses the same evaluation code. Still nothing on journeys, decisioning, AI agents, a CLI, or connectors beyond webhook. See `docs/ARCHITECTURE.md` for the full picture of what's built vs. deferred and why.
 
 ## Architecture (this milestone)
 
 - `crates/core` — canonical domain types (event envelope, identity refs, tenant/workspace/environment ids)
 - `crates/namespaces` — identity namespace registry
-- `crates/schema-registry` — event schema registry + validation
-- `crates/mixins` — composable profile mixins (standard library + custom)
+- `crates/schema-registry` — event schema registry + validation, field-level governance labels
+- `crates/mixins` — composable profile mixins (standard library + custom), standard library now carries real `PII`/`IDENTITY` labels
 - `crates/identity` — identity graph: deterministic matching, explicit merge/split, append-only audit trail
 - `crates/merge-policy` — conflict resolution strategies for profile projection
 - `crates/profile` — unified customer profile projection, field-level provenance, merge-suggestion similarity scoring
 - `crates/events` — Kafka/Redpanda producer/consumer wrappers
 - `crates/audiences` — rule-based audience definitions, real-time streaming membership evaluation
-- `crates/connectors` — destination plugin shape (`DestinationConnector`) + one webhook implementation, activation log
+- `crates/connectors` — destination plugin shape (`DestinationConnector`) + one webhook implementation, activation log with `sent`/`failed`/`blocked` status
+- `crates/governance` — label-based deny-list policy engine, append-only consent ledger, structured denial reasons
 - `crates/api` — Axum HTTP server (ingestion + query)
 - `crates/worker` — Kafka consumer pipeline (validate → resolve → merge → project → evaluate audiences)
 - `sdk/js` — TypeScript client SDK, npm-workspace-linked
-- `ui/` — Next.js viewer: profile timeline, audiences (create/members/activate), data quality dashboard, field lineage (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
+- `ui/` — Next.js viewer: profile timeline (+ consent section), audiences (create/members/activate), data quality dashboard, field lineage, governance (policies), policy simulator (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
 
 ## Development
 

@@ -65,6 +65,19 @@ Audiences, one destination connector, a data quality dashboard, and field lineag
 
 Two latent bugs fixed in the course of this phase, both pre-existing and only now exercised by a read path that renders them: `SchemaStatus`/`MixinStatus` had `sqlx` casing (`"active"`) but no matching `serde` casing, so their JSON was `"Active"` until the lineage view was about to display it; `Condition`'s natural `#[serde(tag = "type")]` representation doesn't compile for a recursive enum (`Not(Box<Condition>)`) — serde's tagged-enum `Content` buffering blows the compiler's type-instantiation limit — so `Condition` is externally tagged (`{"attribute": {...}}`, not `{"type": "attribute", ...}`) instead.
 
+## What's built (Phase 4: governance)
+
+Labels, marketing actions, a deny-list policy engine, an append-only consent ledger, and a policy simulator — layered on Phases 1–3 without changing their event/profile/audience behavior:
+
+- **Governance labels** (`mb-schema-registry::FieldDef.labels`) — free-form strings (`"PII"`, `"HEALTH"`, ...), not a closed enum, matching the extensibility already established for mixin namespaces. The standard vocabulary (Section 13) is documented, not enforced. Only **mixin field** labels are wired into evaluation this phase; schema field labels are captured but not yet acted on. The standard mixins now carry real labels (`contact@1.0.email`/`.phone` → `PII, DIRECT_IDENTIFIER`, `person@1.0`'s name/birth-date fields → `PII`, `identity@1.0.customer_id`/`.crm_id` → `IDENTITY`).
+- **Marketing actions & destination capability** — `Destination` (`mb-connectors`) gained `supported_actions` (Section 14); activating for an action a destination doesn't declare is a `DestinationCapability` denial.
+- **Policy engine** (`mb-governance`) — `Policy(label, action, effect, priority)`, default **allow**, an explicit `Deny` blocks (Section 15). No exceptions/inheritance/versioning. `evaluate_labels` returns every matching `Deny` as a structured `Reason`, not a bare "policy violation" (Section 16).
+- **Consent** — `consent_events` is append-only (revoking never erases the earlier grant); current state per purpose is the latest non-expired event. A fixed mapping (`consent_purpose_for_action`) decides which of the Section 14 actions need which Section 17 purpose; `ANALYTICS`/`DATA_ENRICHMENT`/`AI_PROCESSING` don't gate on consent.
+- **Governed activation** — `POST /audiences/{id}/activate` now takes a `marketing_action` and checks destination capability, label policy (against the mixin fields *actually populated* on that specific profile — `profile_field_labels`), and consent **per member**, skipping and explaining (not silently sending or silently dropping) anything that fails. `activation_log.status` gained `blocked` (never attempted) alongside `sent`/`failed` (attempted).
+- **Policy simulator** (`POST /policy-simulate`, `ui/app/policy-simulator`) — reuses the exact same evaluation primitives as real activation, so its answer is guaranteed consistent with what activation would actually do. Label/policy/capability is checked against every field populated across the audience's *current members* (a data-shape question); consent is reported as a `granted`/`missing`/`total` count, since it's genuinely per-profile and a single yes/no would misrepresent that.
+
+Verified end to end: a `Deny(PII, ADVERTISING)` policy blocked a profile carrying `email`/`first_name` from an `ADVERTISING` activation with an explicit reason, while the same audience activated fine for `ANALYTICS` (no matching policy); granting `advertising` consent removed the `ConsentMissing` reason while the `PII` policy still blocked independently; the simulator's `blocked_fields`/`consent_summary` matched the real activation outcome exactly; consent history survived a revoke (both events present, current state correctly showed the latest).
+
 ## Deployment (this phase)
 
 Minimal dev mode only: Postgres + Redpanda via `docker-compose.yml`, `api` and `worker` run directly with `cargo run`. The heavier "enterprise" deployment described in the product spec (Kafka cluster, Flink, Temporal, ClickHouse, object storage, Kubernetes) is not needed to prove the foundation and isn't set up yet.
@@ -76,11 +89,13 @@ This is deliberate, not an oversight — the product spec's own guidance is to g
 - **Sequence audience conditions** (`A THEN B THEN NOT C`) — attribute/event/AND/OR/NOT are done (Phase 3); ordered time-aware chains are a different evaluation model
 - **Streaming membership as Kafka events** — membership changes land in Postgres only, not republished as `customer.entered_audience`/`customer.exited_audience` events
 - **Connectors beyond one webhook destination** — no Salesforce, Braze, Shopify, GA4, Snowflake, BigQuery, ad platforms, or any source connector beyond the HTTP API
-- **Governance labels, consent engine, marketing actions, data usage policy engine, policy simulator**
+- **Schema field labels aren't enforced** — only mixin field labels feed policy evaluation; a schema's own `labels` are stored, not acted on
+- **Policy engine has no exceptions, inheritance, or versioning** — a flat `(label, action, effect, priority)` deny-list only
+- **Consent purpose mapping is fixed code**, not tenant-configurable, and there's no jurisdiction-aware consent logic beyond storing the field
 - **Journeys, durable orchestration (Temporal), visual canvas**
 - **Decisioning** (rules, scoring, next-best-action)
 - **AI agents, AI assistant, model provider abstraction**
-- **CLI, admin UI beyond the profile/audience/data-quality viewers, policy simulator UI**
+- **CLI, admin UI beyond the profile/audience/data-quality/governance/simulator viewers**
 - **Multi-tenancy enforcement (RBAC, SSO, tenant isolation)** — `tenant_id` is threaded through every table, but nothing yet stops one tenant from querying another's data; there's no auth layer at all, and `ui/` has no login
 - **Automatic identity resolution stays exact-match only** — probabilistic signals (Phase 2) only ever produce *suggestions* a human confirms; nothing auto-merges based on a fuzzy match
 - **Full lineage** — `profile_field_provenance` records only the *winning* source per field, not every observation; the Phase 3 lineage view traces that winner, not history
@@ -94,7 +109,7 @@ Phases as described in the product spec, in order:
 1. **Core event platform** — done
 2. **Identity** — done: deterministic matching, confidence-scored merge suggestions, explicit merge/split, profile timeline UI. Not done: automatic probabilistic resolution (by design — see above), full lineage (every observation, not just the winner)
 3. **CDP** — done: rule-based audiences with real-time streaming membership, a data quality dashboard, field lineage, one webhook destination connector. Not done: sequence conditions, membership-as-Kafka-events, any connector beyond webhook, batch/scheduled segmentation
-4. **Governance** — labels, marketing actions, consent engine, data usage policy engine, policy simulator
+4. **Governance** — done: labels, marketing actions, a deny-list policy engine, append-only consent, governed per-profile activation, a policy simulator matching real activation behavior. Not done: exceptions/inheritance/policy versioning, schema-field-label enforcement, tenant-configurable consent purposes
 5. **Engagement** — message templates, channel adapters (email/push/SMS/WhatsApp), journeys, Temporal-backed durable orchestration
 6. **Decisioning** — rules, scoring, next-best-action, frequency/contact policy
 7. **AI** — AI assistant, tool-using agents, agent governance, model provider abstraction

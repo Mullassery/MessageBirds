@@ -2,6 +2,20 @@ import type { AudienceDefinition, Destination } from "@messagebirds/sdk";
 import { apiFetch } from "@/lib/api";
 import { activateAudience, createAudience, createDestination } from "./actions";
 
+const MARKETING_ACTIONS = [
+  "EMAIL_MARKETING",
+  "SMS_MARKETING",
+  "PUSH_MARKETING",
+  "WHATSAPP_MARKETING",
+  "PERSONALIZATION",
+  "ANALYTICS",
+  "ADVERTISING",
+  "CROSS_SITE_TARGETING",
+  "THIRD_PARTY_EXPORT",
+  "DATA_ENRICHMENT",
+  "AI_PROCESSING",
+];
+
 export default async function AudiencesPage({
   searchParams,
 }: {
@@ -115,7 +129,8 @@ export default async function AudiencesPage({
               <ul>
                 {destinations.map((d) => (
                   <li key={d.id}>
-                    {d.name} — <span className="mono">{String(d.config.url ?? "")}</span>
+                    {d.name} — <span className="mono">{String(d.config.url ?? "")}</span>{" "}
+                    <span className="muted">[{d.supported_actions.join(", ") || "no actions declared"}]</span>
                   </li>
                 ))}
               </ul>
@@ -130,6 +145,15 @@ export default async function AudiencesPage({
                 Webhook URL
                 <input name="webhook_url" type="url" required />
               </label>
+              <fieldset>
+                <legend>Supported marketing actions</legend>
+                {MARKETING_ACTIONS.map((a) => (
+                  <label key={a} style={{ flexDirection: "row", gap: "0.4rem" }}>
+                    <input type="checkbox" name="supported_actions" value={a} />
+                    {a}
+                  </label>
+                ))}
+              </fieldset>
               <button type="submit">Add destination</button>
             </form>
           </section>
@@ -159,6 +183,16 @@ export default async function AudiencesPage({
                           {destinations.map((d) => (
                             <option key={d.id} value={d.id}>
                               {d.name} ({d.kind})
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Marketing action
+                        <select name="action" required>
+                          {MARKETING_ACTIONS.map((act) => (
+                            <option key={act} value={act}>
+                              {act}
                             </option>
                           ))}
                         </select>

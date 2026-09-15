@@ -15,12 +15,14 @@ pub enum ConnectorRepoError {
 
 #[async_trait]
 pub trait DestinationRepo: Send + Sync {
+    #[allow(clippy::too_many_arguments)]
     async fn register(
         &self,
         tenant_id: Uuid,
         kind: &str,
         name: &str,
         config: serde_json::Value,
+        supported_actions: Vec<String>,
     ) -> Result<Destination, ConnectorRepoError>;
 
     async fn get(&self, tenant_id: Uuid, id: Uuid) -> Result<Destination, ConnectorRepoError>;
@@ -65,12 +67,13 @@ impl DestinationRepo for PgConnectorRepo {
         kind: &str,
         name: &str,
         config: serde_json::Value,
+        supported_actions: Vec<String>,
     ) -> Result<Destination, ConnectorRepoError> {
         let row = sqlx::query_as::<_, Destination>(
             r#"
-            INSERT INTO destinations (id, tenant_id, kind, name, config, created_at)
-            VALUES ($1, $2, $3, $4, $5, now())
-            RETURNING id, tenant_id, kind, name, config, created_at
+            INSERT INTO destinations (id, tenant_id, kind, name, config, supported_actions, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, now())
+            RETURNING id, tenant_id, kind, name, config, supported_actions, created_at
             "#,
         )
         .bind(Uuid::new_v4())
@@ -78,6 +81,7 @@ impl DestinationRepo for PgConnectorRepo {
         .bind(kind)
         .bind(name)
         .bind(config)
+        .bind(supported_actions)
         .fetch_one(&self.pool)
         .await?;
         Ok(row)
@@ -85,7 +89,7 @@ impl DestinationRepo for PgConnectorRepo {
 
     async fn get(&self, tenant_id: Uuid, id: Uuid) -> Result<Destination, ConnectorRepoError> {
         sqlx::query_as::<_, Destination>(
-            "SELECT id, tenant_id, kind, name, config, created_at FROM destinations WHERE tenant_id = $1 AND id = $2",
+            "SELECT id, tenant_id, kind, name, config, supported_actions, created_at FROM destinations WHERE tenant_id = $1 AND id = $2",
         )
         .bind(tenant_id)
         .bind(id)
@@ -96,7 +100,7 @@ impl DestinationRepo for PgConnectorRepo {
 
     async fn list(&self, tenant_id: Uuid) -> Result<Vec<Destination>, ConnectorRepoError> {
         let rows = sqlx::query_as::<_, Destination>(
-            "SELECT id, tenant_id, kind, name, config, created_at FROM destinations WHERE tenant_id = $1 ORDER BY name",
+            "SELECT id, tenant_id, kind, name, config, supported_actions, created_at FROM destinations WHERE tenant_id = $1 ORDER BY name",
         )
         .bind(tenant_id)
         .fetch_all(&self.pool)

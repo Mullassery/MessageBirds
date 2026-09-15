@@ -33,6 +33,13 @@ pub struct FieldDef {
     pub required: bool,
     #[serde(default, rename = "enum")]
     pub enum_values: Option<Vec<serde_json::Value>>,
+    /// Governance labels (Section 13) — free-form strings (`"PII"`,
+    /// `"HEALTH"`, ...), not a closed enum, so an org can label with
+    /// anything. Only mixin field labels are wired into policy evaluation
+    /// (`mb-governance`) this phase; schema field labels are captured but
+    /// not yet acted on.
+    #[serde(default)]
+    pub labels: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]

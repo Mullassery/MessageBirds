@@ -16,7 +16,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </h1>
           <p className="muted">
             Profile lookup · <a href="/audiences">Audiences</a> ·{" "}
-            <a href="/data-quality">Data quality</a>
+            <a href="/data-quality">Data quality</a> · <a href="/governance">Governance</a> ·{" "}
+            <a href="/policy-simulator">Policy simulator</a>
           </p>
         </header>
         {children}

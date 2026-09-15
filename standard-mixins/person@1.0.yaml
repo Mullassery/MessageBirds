@@ -5,12 +5,15 @@ fields:
   first_name:
     type: string
     required: false
+    labels: ["PII"]
   last_name:
     type: string
     required: false
+    labels: ["PII"]
   birth_date:
     type: string
     required: false
+    labels: ["PII"]
   gender:
     type: string
     required: false

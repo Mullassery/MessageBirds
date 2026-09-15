@@ -66,6 +66,7 @@ mod tests {
                     field_type: ty,
                     required,
                     enum_values: None,
+                    labels: Vec::new(),
                 },
             );
         }

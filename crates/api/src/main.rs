@@ -1,4 +1,5 @@
 mod error;
+mod labels;
 mod routes;
 mod state;
 
@@ -9,6 +10,7 @@ use sqlx::postgres::PgPoolOptions;
 use mb_audiences::PgAudienceRepo;
 use mb_connectors::{PgConnectorRepo, WebhookConnector};
 use mb_events::EventProducer;
+use mb_governance::PgGovernanceRepo;
 use mb_identity::PgIdentityRepo;
 use mb_mixins::PgMixinRepo;
 use mb_namespaces::PgNamespaceRepo;
@@ -49,7 +51,8 @@ async fn main() -> anyhow::Result<()> {
         profiles: Arc::new(PgProfileRepo::new(pool.clone())),
         identity: Arc::new(PgIdentityRepo::new(pool.clone())),
         audiences: Arc::new(PgAudienceRepo::new(pool.clone())),
-        connectors: Arc::new(PgConnectorRepo::new(pool)),
+        connectors: Arc::new(PgConnectorRepo::new(pool.clone())),
+        governance: Arc::new(PgGovernanceRepo::new(pool)),
         webhook: Arc::new(WebhookConnector::new()),
     };
 

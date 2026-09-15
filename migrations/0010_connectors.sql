@@ -1,10 +1,14 @@
 CREATE TABLE destinations (
-    id          uuid PRIMARY KEY,
-    tenant_id   uuid NOT NULL,
-    kind        text NOT NULL,
-    name        text NOT NULL,
-    config      jsonb NOT NULL,
-    created_at  timestamptz NOT NULL DEFAULT now()
+    id                  uuid PRIMARY KEY,
+    tenant_id           uuid NOT NULL,
+    kind                text NOT NULL,
+    name                text NOT NULL,
+    config              jsonb NOT NULL,
+    -- Section 14 marketing-action vocabulary this destination is declared
+    -- for, e.g. {"ADVERTISING"}. Activating for an action not in this list
+    -- is a DestinationCapability denial (mb-governance).
+    supported_actions   text[] NOT NULL DEFAULT '{}',
+    created_at          timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX destinations_tenant_idx ON destinations (tenant_id);
@@ -17,7 +21,9 @@ CREATE TABLE activation_log (
     audience_id     uuid NOT NULL,
     destination_id  uuid NOT NULL,
     profile_id      uuid NOT NULL,
-    status          text NOT NULL CHECK (status IN ('sent', 'failed')),
+    -- 'blocked' = never attempted, a governance policy or missing consent
+    -- denied it before send; 'failed' = attempted, connector errored.
+    status          text NOT NULL CHECK (status IN ('sent', 'failed', 'blocked')),
     detail          text,
     created_at      timestamptz NOT NULL DEFAULT now()
 );

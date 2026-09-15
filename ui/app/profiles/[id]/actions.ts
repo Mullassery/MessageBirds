@@ -42,3 +42,32 @@ export async function splitIdentity(profileId: string, formData: FormData) {
     : "split completed";
   redirect(`/profiles/${profileId}?note=${encodeURIComponent(note)}`);
 }
+
+export async function recordConsent(profileId: string, formData: FormData) {
+  const tenantId = String(formData.get("tenant_id") ?? "").trim();
+  const purpose = String(formData.get("purpose") ?? "").trim();
+  const granted = formData.get("granted") === "on";
+  const source = String(formData.get("source") ?? "").trim();
+
+  try {
+    await apiFetch("/consent", {
+      method: "POST",
+      body: JSON.stringify({
+        tenant_id: tenantId,
+        profile_id: profileId,
+        purpose,
+        granted,
+        source,
+      }),
+    });
+  } catch (err) {
+    const message = err instanceof ApiError ? err.message : "recording consent failed";
+    redirect(`/profiles/${profileId}?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(
+    `/profiles/${profileId}?note=${encodeURIComponent(
+      `recorded ${purpose}=${granted ? "granted" : "revoked"}`,
+    )}`,
+  );
+}

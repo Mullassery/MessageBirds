@@ -1005,6 +1005,7 @@ dependencies = [
  "mb-connectors",
  "mb-core",
  "mb-events",
+ "mb-governance",
  "mb-identity",
  "mb-mixins",
  "mb-namespaces",
@@ -1073,6 +1074,20 @@ dependencies = [
  "thiserror 1.0.69",
  "tokio",
  "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "mb-governance"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
  "uuid",
 ]
 

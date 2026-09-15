@@ -147,6 +147,8 @@ export interface FieldDef {
   type: FieldType;
   required: boolean;
   enum?: unknown[] | null;
+  /** Governance labels (Section 13), e.g. `["PII", "DIRECT_IDENTIFIER"]`. */
+  labels: string[];
 }
 
 export type SchemaStatus = "active" | "deprecated";
@@ -226,13 +228,33 @@ export interface Destination {
   kind: string;
   name: string;
   config: Record<string, unknown>;
+  /** Section 14 marketing-action vocabulary this destination is declared for. */
+  supported_actions: string[];
   created_at: string;
+}
+
+/**
+ * Mirrors `mb_governance::Reason` — why an activation was denied.
+ * Externally tagged (`{"kind": "label_policy_denied", ...}`) via serde's
+ * `#[serde(tag = "kind")]`, which is fine here since `Reason` isn't
+ * recursive (unlike `Condition`).
+ */
+export type Reason =
+  | { kind: "label_policy_denied"; label: string; action: string; policy_id: string }
+  | { kind: "consent_missing"; purpose: string }
+  | { kind: "destination_capability"; action: string };
+
+/** One profile skipped during activation, and why. */
+export interface BlockedProfile {
+  profile_id: string;
+  reasons: Reason[];
 }
 
 /** Response of `POST /audiences/{id}/activate`. */
 export interface ActivationSummary {
   sent: number;
   failed: number;
+  blocked: BlockedProfile[];
 }
 
 /** One row of `GET /dead-letter-events`. */
@@ -245,4 +267,54 @@ export interface DeadLetterEventView {
   reason: string;
   raw_payload: unknown;
   created_at: string;
+}
+
+export type Effect = "allow" | "deny";
+
+/** Mirrors `mb_governance::Policy`. */
+export interface Policy {
+  id: string;
+  tenant_id: string;
+  label: string;
+  action: string;
+  effect: Effect;
+  priority: number;
+  created_at: string;
+}
+
+/** Mirrors `mb_governance::ConsentEvent` — one append-only consent record. */
+export interface ConsentEvent {
+  id: string;
+  tenant_id: string;
+  profile_id: string;
+  purpose: string;
+  granted: boolean;
+  source: string;
+  jurisdiction: string | null;
+  consent_version: string | null;
+  expires_at: string | null;
+  created_at: string;
+}
+
+/** Mirrors `mb_governance::ConsentState` — derived current state for one purpose. */
+export interface ConsentState {
+  purpose: string;
+  granted: boolean;
+  source: string;
+  updated_at: string;
+}
+
+/** Response of `GET /profiles/{id}/consent`. */
+export interface ConsentView {
+  current: ConsentState[];
+  history: ConsentEvent[];
+}
+
+/** Response of `POST /policy-simulate` (Section 49). */
+export interface PolicySimulateResponse {
+  allowed_fields: string[];
+  blocked_fields: string[];
+  applicable_policies: Reason[];
+  consent_summary: { granted: number; missing: number; total: number } | null;
+  final_decision: "allow" | "deny" | "partial";
 }

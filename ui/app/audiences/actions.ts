@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import type { Condition, AttributeOp } from "@messagebirds/sdk";
+import type { ActivationSummary, AttributeOp, Condition } from "@messagebirds/sdk";
 import { apiFetch, ApiError } from "@/lib/api";
 
 function parseAttributeValue(raw: FormDataEntryValue | null): unknown {
@@ -69,6 +69,7 @@ export async function createDestination(formData: FormData) {
   const tenantId = String(formData.get("tenant_id") ?? "").trim();
   const name = String(formData.get("destination_name") ?? "").trim();
   const url = String(formData.get("webhook_url") ?? "").trim();
+  const supportedActions = formData.getAll("supported_actions").map(String);
 
   if (!tenantId || !name || !url) {
     redirect(
@@ -81,7 +82,13 @@ export async function createDestination(formData: FormData) {
   try {
     await apiFetch("/destinations", {
       method: "POST",
-      body: JSON.stringify({ tenant_id: tenantId, kind: "webhook", name, config: { url } }),
+      body: JSON.stringify({
+        tenant_id: tenantId,
+        kind: "webhook",
+        name,
+        config: { url },
+        supported_actions: supportedActions,
+      }),
     });
   } catch (err) {
     const message = err instanceof ApiError ? err.message : "create failed";
@@ -99,21 +106,26 @@ export async function activateAudience(formData: FormData) {
   const tenantId = String(formData.get("tenant_id") ?? "").trim();
   const audienceId = String(formData.get("audience_id") ?? "").trim();
   const destinationId = String(formData.get("destination_id") ?? "").trim();
+  const action = String(formData.get("action") ?? "").trim();
 
-  let summary: { sent: number; failed: number } | null;
+  let summary: ActivationSummary | null;
   try {
-    summary = await apiFetch<{ sent: number; failed: number }>(`/audiences/${audienceId}/activate`, {
+    summary = await apiFetch<ActivationSummary>(`/audiences/${audienceId}/activate`, {
       method: "POST",
-      body: JSON.stringify({ tenant_id: tenantId, destination_id: destinationId }),
+      body: JSON.stringify({ tenant_id: tenantId, destination_id: destinationId, action }),
     });
   } catch (err) {
     const message = err instanceof ApiError ? err.message : "activation failed";
     redirect(`/audiences?tenant_id=${encodeURIComponent(tenantId)}&error=${encodeURIComponent(message)}`);
   }
 
+  const blockedCount = summary?.blocked.length ?? 0;
   redirect(
     `/audiences?tenant_id=${encodeURIComponent(tenantId)}&note=${encodeURIComponent(
-      `activation sent=${summary?.sent ?? 0} failed=${summary?.failed ?? 0}`,
+      `activation sent=${summary?.sent ?? 0} failed=${summary?.failed ?? 0} blocked=${blockedCount}` +
+        (blockedCount > 0
+          ? ` — first reason: ${JSON.stringify(summary?.blocked[0]?.reasons[0])}`
+          : ""),
     )}`,
   );
 }

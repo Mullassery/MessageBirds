@@ -114,6 +114,7 @@ mod tests {
                 field_type: FieldType::String,
                 required: true,
                 enum_values: None,
+                labels: Vec::new(),
             },
         );
         fields.insert(
@@ -122,6 +123,7 @@ mod tests {
                 field_type: FieldType::Number,
                 required: false,
                 enum_values: None,
+                labels: Vec::new(),
             },
         );
         Schema {

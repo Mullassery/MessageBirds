@@ -98,6 +98,15 @@ impl From<mb_connectors::ConnectorRepoError> for ApiError {
     }
 }
 
+impl From<mb_governance::GovernanceError> for ApiError {
+    fn from(e: mb_governance::GovernanceError) -> Self {
+        use mb_governance::GovernanceError::*;
+        match e {
+            Db(_) => ApiError::Internal(e.to_string()),
+        }
+    }
+}
+
 impl From<sqlx::Error> for ApiError {
     fn from(e: sqlx::Error) -> Self {
         ApiError::Internal(e.to_string())

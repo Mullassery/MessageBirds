@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type {
+  ConsentView,
   EventSummary,
   IdentityView,
   Membership,
@@ -7,7 +8,7 @@ import type {
   ProfileView,
 } from "@messagebirds/sdk";
 import { apiFetch } from "@/lib/api";
-import { mergeProfile, splitIdentity } from "./actions";
+import { mergeProfile, recordConsent, splitIdentity } from "./actions";
 
 export default async function ProfilePage({
   params,
@@ -19,20 +20,22 @@ export default async function ProfilePage({
   const { id } = await params;
   const { error, note } = await searchParams;
 
-  const [profile, identity, events, suggestions, audiences] = await Promise.all([
-    apiFetch<ProfileView>(`/profiles/${id}`),
-    apiFetch<IdentityView>(`/profiles/${id}/identity`),
-    apiFetch<EventSummary[]>(`/profiles/${id}/events`),
-    apiFetch<MergeSuggestion[]>(`/profiles/${id}/merge-suggestions`),
-    apiFetch<Membership[]>(`/profiles/${id}/audiences`),
-  ]);
-
+  const profile = await apiFetch<ProfileView>(`/profiles/${id}`);
   if (!profile) {
     notFound();
   }
 
+  const [identity, events, suggestions, audiences, consent] = await Promise.all([
+    apiFetch<IdentityView>(`/profiles/${id}/identity`),
+    apiFetch<EventSummary[]>(`/profiles/${id}/events`),
+    apiFetch<MergeSuggestion[]>(`/profiles/${id}/merge-suggestions`),
+    apiFetch<Membership[]>(`/profiles/${id}/audiences`),
+    apiFetch<ConsentView>(`/profiles/${id}/consent?tenant_id=${profile.tenant_id}`),
+  ]);
+
   const boundMerge = mergeProfile.bind(null, id);
   const boundSplit = splitIdentity.bind(null, id);
+  const boundConsent = recordConsent.bind(null, id);
 
   return (
     <main>
@@ -238,6 +241,55 @@ export default async function ProfilePage({
             </tbody>
           </table>
         )}
+      </section>
+
+      <section>
+        <h2>Consent</h2>
+        <p className="muted">
+          Append-only — recording never overwrites history, current state is the latest
+          non-expired event per purpose.
+        </p>
+        {!consent || consent.current.length === 0 ? (
+          <p className="muted">No consent recorded.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Purpose</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {consent.current.map((c) => (
+                <tr key={c.purpose}>
+                  <td className="mono">{c.purpose}</td>
+                  <td className={c.granted ? "" : "error"}>
+                    {c.granted ? "granted" : "revoked"}
+                  </td>
+                  <td>{c.source}</td>
+                  <td className="muted">{c.updated_at}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <form action={boundConsent}>
+          <input type="hidden" name="tenant_id" value={profile.tenant_id} />
+          <label>
+            Purpose
+            <input name="purpose" placeholder="email" required />
+          </label>
+          <label>
+            <input type="checkbox" name="granted" defaultChecked /> Granted
+          </label>
+          <label>
+            Source
+            <input name="source" placeholder="preference-center" required />
+          </label>
+          <button type="submit">Record consent</button>
+        </form>
       </section>
 
       <section>

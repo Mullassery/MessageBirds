@@ -2,6 +2,7 @@ mod audiences;
 mod dead_letter;
 mod destinations;
 mod events;
+mod governance;
 mod health;
 mod mixins;
 mod namespaces;
@@ -39,6 +40,10 @@ pub fn router(state: AppState) -> Router {
             get(profiles::get_profile_audiences),
         )
         .route(
+            "/profiles/:id/consent",
+            get(governance::get_profile_consent),
+        )
+        .route(
             "/schemas",
             get(schemas::list_schemas).post(schemas::create_schema),
         )
@@ -70,5 +75,11 @@ pub fn router(state: AppState) -> Router {
             "/dead-letter-events",
             get(dead_letter::list_dead_letter_events),
         )
+        .route(
+            "/policies",
+            get(governance::list_policies).post(governance::create_policy),
+        )
+        .route("/consent", post(governance::record_consent))
+        .route("/policy-simulate", post(governance::policy_simulate))
         .with_state(state)
 }

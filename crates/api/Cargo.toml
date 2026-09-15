@@ -19,6 +19,7 @@ mb-profile.workspace = true
 mb-events.workspace = true
 mb-audiences.workspace = true
 mb-connectors.workspace = true
+mb-governance.workspace = true
 tokio.workspace = true
 axum.workspace = true
 serde.workspace = true

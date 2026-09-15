@@ -5,9 +5,12 @@ fields:
   email:
     type: string
     required: false
+    labels: ["PII", "DIRECT_IDENTIFIER"]
   phone:
     type: string
     required: false
+    labels: ["PII", "DIRECT_IDENTIFIER"]
   address:
     type: object
     required: false
+    labels: ["PII"]
