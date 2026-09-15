@@ -4,6 +4,7 @@ use sqlx::PgPool;
 use thiserror::Error;
 use uuid::Uuid;
 
+use mb_audiences::{AudienceError, AudienceRepo};
 use mb_core::{EventEnvelope, MixinRef};
 use mb_identity::{IdentityError, IdentityRepo};
 use mb_merge_policy::{MergePolicyRepo, MergePolicyRepoError};
@@ -27,6 +28,8 @@ pub enum WorkerError {
     #[error(transparent)]
     Profile(#[from] ProfileError),
     #[error(transparent)]
+    Audience(#[from] AudienceError),
+    #[error(transparent)]
     Db(#[from] sqlx::Error),
 }
 
@@ -43,6 +46,7 @@ pub struct Pipeline {
     pub identity: Arc<dyn IdentityRepo>,
     pub merge_policies: Arc<dyn MergePolicyRepo>,
     pub profiles: Arc<dyn ProfileRepo>,
+    pub audiences: Arc<dyn AudienceRepo>,
 }
 
 impl Pipeline {
@@ -160,7 +164,23 @@ impl Pipeline {
             }
         }
 
+        // Must happen before audience evaluation: an `Event` condition
+        // queries the `events` table, and this event should be visible to
+        // its own audience check (e.g. "entered on the Nth qualifying
+        // event," not "entered starting from the N+1th").
         persist_event(&self.pool, envelope, profile_id).await?;
+
+        // `apply_mixin_update` (and therefore the `profiles` row) is only
+        // reached if the event carried an identity-mixin-mappable claim or
+        // a `profile_updates` block — an event with e.g. only a
+        // non-primary `email` claim and no `profile_updates` can validly
+        // reach here without a profile row existing yet, so this checks
+        // rather than assumes.
+        if let Some(profile) = self.profiles.get(profile_id).await? {
+            self.audiences
+                .evaluate_and_sync_membership(envelope.tenant_id.0, profile_id, &profile.mixins)
+                .await?;
+        }
 
         Ok(Outcome::Accepted { profile_id })
     }

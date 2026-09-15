@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use mb_audiences::{AudienceRepo, Membership};
 use mb_identity::{IdentityAuditEntry, IdentityNode, IdentityRepo};
 use mb_profile::{FieldProvenance, PersonSignal, Profile, ProfileRepo};
 
@@ -269,4 +270,21 @@ pub async fn split_profile(
         "new_profile_id": new_profile_id,
         "note": "only the identity graph link moved; mixin/profile data was not migrated and stays on the original profile"
     })))
+}
+
+pub async fn get_profile_audiences(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<Vec<Membership>>, ApiError> {
+    let profile = state
+        .profiles
+        .get(id)
+        .await?
+        .ok_or_else(|| ApiError::NotFound(format!("profile {id} not found")))?;
+    Ok(Json(
+        state
+            .audiences
+            .get_profile_audiences(profile.tenant_id, id)
+            .await?,
+    ))
 }

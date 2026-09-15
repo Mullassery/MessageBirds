@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type {
   EventSummary,
   IdentityView,
+  Membership,
   MergeSuggestion,
   ProfileView,
 } from "@messagebirds/sdk";
@@ -18,11 +19,12 @@ export default async function ProfilePage({
   const { id } = await params;
   const { error, note } = await searchParams;
 
-  const [profile, identity, events, suggestions] = await Promise.all([
+  const [profile, identity, events, suggestions, audiences] = await Promise.all([
     apiFetch<ProfileView>(`/profiles/${id}`),
     apiFetch<IdentityView>(`/profiles/${id}/identity`),
     apiFetch<EventSummary[]>(`/profiles/${id}/events`),
     apiFetch<MergeSuggestion[]>(`/profiles/${id}/merge-suggestions`),
+    apiFetch<Membership[]>(`/profiles/${id}/audiences`),
   ]);
 
   if (!profile) {
@@ -61,6 +63,7 @@ export default async function ProfilePage({
                 <th>Source</th>
                 <th>Policy</th>
                 <th>Updated</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -72,6 +75,15 @@ export default async function ProfilePage({
                   <td>{p.source}</td>
                   <td>{p.applied_policy}</td>
                   <td className="muted">{p.updated_at}</td>
+                  <td>
+                    <a
+                      href={`/profiles/${id}/lineage?mixin=${encodeURIComponent(
+                        p.mixin_key,
+                      )}&field=${encodeURIComponent(p.field_path)}`}
+                    >
+                      lineage
+                    </a>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -187,6 +199,40 @@ export default async function ProfilePage({
                       <button type="submit">Merge into this profile</button>
                     </form>
                   </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <section>
+        <h2>Audiences</h2>
+        <p className="muted">
+          Evaluated in real time as this profile&apos;s mixins change — see{" "}
+          <a href="/audiences">the audience list</a> to create more.
+        </p>
+        {!audiences || audiences.length === 0 ? (
+          <p className="muted">Not a member of any audience.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Audience</th>
+                <th>Entered</th>
+                <th>Exited</th>
+              </tr>
+            </thead>
+            <tbody>
+              {audiences.map((m) => (
+                <tr key={m.audience_id}>
+                  <td className="mono">
+                    <a href={`/audiences/${m.audience_id}?tenant_id=${profile.tenant_id}`}>
+                      {m.audience_id}
+                    </a>
+                  </td>
+                  <td className="muted">{m.entered_at}</td>
+                  <td className="muted">{m.exited_at ?? "—"}</td>
                 </tr>
               ))}
             </tbody>

@@ -17,6 +17,7 @@ mb-mixins.workspace = true
 mb-identity.workspace = true
 mb-merge-policy.workspace = true
 mb-profile.workspace = true
+mb-audiences.workspace = true
 tokio.workspace = true
 serde.workspace = true
 serde_json.workspace = true

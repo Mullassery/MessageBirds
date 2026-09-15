@@ -1,4 +1,4 @@
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::Json;
 use serde::Deserialize;
@@ -31,4 +31,11 @@ pub async fn create_mixin(
 
 pub async fn list_mixins(State(state): State<AppState>) -> Result<Json<Vec<MixinDef>>, ApiError> {
     Ok(Json(state.mixins.list().await?))
+}
+
+pub async fn get_mixin(
+    State(state): State<AppState>,
+    Path((namespace, name, version)): Path<(String, String, String)>,
+) -> Result<Json<MixinDef>, ApiError> {
+    Ok(Json(state.mixins.get(&namespace, &name, &version).await?))
 }

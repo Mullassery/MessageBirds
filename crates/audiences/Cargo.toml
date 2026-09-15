@@ -1,0 +1,19 @@
+[package]
+name = "mb-audiences"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+async-trait.workspace = true
+sqlx.workspace = true
+async-recursion = "1"
+
+[dev-dependencies]
+tokio.workspace = true

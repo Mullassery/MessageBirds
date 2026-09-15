@@ -123,3 +123,126 @@ export interface EventSummary {
   received_at: string;
   occurred_at: string;
 }
+
+/** Response of `GET /events/{id}` — a single event, in full. */
+export interface EventDetail {
+  id: string;
+  tenant_id: string;
+  event_type: string;
+  schema_name: string;
+  schema_version: string;
+  identity: IdentityRef[];
+  context: Record<string, unknown>;
+  data: Record<string, unknown>;
+  profile_id: string;
+  received_at: string;
+  occurred_at: string;
+}
+
+/** Mirrors `mb_schema_registry::FieldType`. */
+export type FieldType = "string" | "number" | "boolean" | "object" | "array";
+
+/** Mirrors `mb_schema_registry::FieldDef`. */
+export interface FieldDef {
+  type: FieldType;
+  required: boolean;
+  enum?: unknown[] | null;
+}
+
+export type SchemaStatus = "active" | "deprecated";
+
+/** Mirrors `mb_schema_registry::Schema` — response of `GET /schemas/{name}/{version}`. */
+export interface SchemaDefinition {
+  id: string;
+  name: string;
+  version: string;
+  fields: Record<string, FieldDef>;
+  status: SchemaStatus;
+  created_at: string;
+}
+
+export type MixinStatus = "active" | "deprecated";
+
+/** Mirrors `mb_mixins::MixinDef` — response of `GET /mixins/{namespace}/{name}/{version}`. */
+export interface MixinDef {
+  id: string;
+  namespace: string;
+  name: string;
+  version: string;
+  fields: Record<string, FieldDef>;
+  status: MixinStatus;
+  created_at: string;
+}
+
+/** Mirrors `mb_audiences::AttributeOp`. */
+export type AttributeOp =
+  | "equals"
+  | "not_equals"
+  | "exists"
+  | "not_exists"
+  | "greater_than"
+  | "less_than"
+  | "contains";
+
+/**
+ * Mirrors `mb_audiences::Condition`. Externally tagged on the wire
+ * (`{"attribute": {...}}`, not `{"type": "attribute", ...}`) — see the
+ * comment on the Rust type for why.
+ */
+export type Condition =
+  | { attribute: { mixin: string; field: string; op: AttributeOp; value?: unknown } }
+  | { event: { event_type: string; within_days: number; min_count: number } }
+  | { and: Condition[] }
+  | { or: Condition[] }
+  | { not: Condition };
+
+export type AudienceStatus = "active" | "archived";
+
+/** Mirrors `mb_audiences::AudienceDefinition`. */
+export interface AudienceDefinition {
+  id: string;
+  tenant_id: string;
+  name: string;
+  version: number;
+  conditions: Condition;
+  status: AudienceStatus;
+  created_at: string;
+}
+
+export type MembershipKind = "entered" | "exited";
+
+/** Mirrors `mb_audiences::Membership` — current membership state. */
+export interface Membership {
+  audience_id: string;
+  profile_id: string;
+  entered_at: string;
+  exited_at: string | null;
+}
+
+/** Mirrors `mb_connectors::Destination`. */
+export interface Destination {
+  id: string;
+  tenant_id: string;
+  kind: string;
+  name: string;
+  config: Record<string, unknown>;
+  created_at: string;
+}
+
+/** Response of `POST /audiences/{id}/activate`. */
+export interface ActivationSummary {
+  sent: number;
+  failed: number;
+}
+
+/** One row of `GET /dead-letter-events`. */
+export interface DeadLetterEventView {
+  id: string;
+  event_id: string;
+  schema_name: string;
+  schema_version: string;
+  source: string;
+  reason: string;
+  raw_payload: unknown;
+  created_at: string;
+}

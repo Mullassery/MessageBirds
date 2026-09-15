@@ -14,7 +14,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <h1>
             <a href="/">MessageBirds</a>
           </h1>
-          <p className="muted">Profile timeline viewer</p>
+          <p className="muted">
+            Profile lookup · <a href="/audiences">Audiences</a> ·{" "}
+            <a href="/data-quality">Data quality</a>
+          </p>
         </header>
         {children}
       </body>

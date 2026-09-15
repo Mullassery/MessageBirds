@@ -78,6 +78,26 @@ impl From<mb_identity::IdentityError> for ApiError {
     }
 }
 
+impl From<mb_audiences::AudienceError> for ApiError {
+    fn from(e: mb_audiences::AudienceError) -> Self {
+        use mb_audiences::AudienceError::*;
+        match e {
+            NotFound(_) => ApiError::NotFound(e.to_string()),
+            Corrupt(_) | Db(_) => ApiError::Internal(e.to_string()),
+        }
+    }
+}
+
+impl From<mb_connectors::ConnectorRepoError> for ApiError {
+    fn from(e: mb_connectors::ConnectorRepoError) -> Self {
+        use mb_connectors::ConnectorRepoError::*;
+        match e {
+            NotFound(_) => ApiError::NotFound(e.to_string()),
+            Db(_) => ApiError::Internal(e.to_string()),
+        }
+    }
+}
+
 impl From<sqlx::Error> for ApiError {
     fn from(e: sqlx::Error) -> Self {
         ApiError::Internal(e.to_string())

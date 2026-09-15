@@ -4,13 +4,15 @@ An open-source, event-driven Customer Data & Engagement Platform. See [`docs/OCD
 
 ## Status
 
-**Phase 2 (identity)**, in progress, on top of the Phase 1 foundation:
+**Phase 3 (CDP)**, in progress, on top of Phases 1–2:
 
 ```
-POST /events → schema validation → mixin composition → identity resolution → merge policy → profile projection → GET /profiles/{id}
+POST /events → schema validation → mixin composition → identity resolution → merge policy → profile projection
+                                                                                     ↓
+                                                            real-time audience evaluation → activation (webhook)
 ```
 
-Phase 2 adds confidence-scored merge suggestions (never automatic), explicit merge/split with an append-only audit trail, and a profile timeline UI (`ui/`). Still nothing on audiences, governance, consent, activation, journeys, decisioning, AI agents, or a CLI. See `docs/ARCHITECTURE.md` for what's next.
+Phase 3 adds rule-based audiences (attribute + event conditions, AND/OR/NOT) evaluated in real time as profiles update, one webhook destination connector with an activation audit log, a data quality dashboard, and a field lineage view — all in `ui/` alongside the Phase 2 profile viewer. Still nothing on governance, consent, journeys, decisioning, AI agents, a CLI, or connectors beyond webhook. See `docs/ARCHITECTURE.md` for the full picture of what's built vs. deferred and why.
 
 ## Architecture (this milestone)
 
@@ -22,10 +24,12 @@ Phase 2 adds confidence-scored merge suggestions (never automatic), explicit mer
 - `crates/merge-policy` — conflict resolution strategies for profile projection
 - `crates/profile` — unified customer profile projection, field-level provenance, merge-suggestion similarity scoring
 - `crates/events` — Kafka/Redpanda producer/consumer wrappers
+- `crates/audiences` — rule-based audience definitions, real-time streaming membership evaluation
+- `crates/connectors` — destination plugin shape (`DestinationConnector`) + one webhook implementation, activation log
 - `crates/api` — Axum HTTP server (ingestion + query)
-- `crates/worker` — Kafka consumer pipeline (validate → resolve → merge → project)
+- `crates/worker` — Kafka consumer pipeline (validate → resolve → merge → project → evaluate audiences)
 - `sdk/js` — TypeScript client SDK, npm-workspace-linked
-- `ui/` — Next.js profile timeline viewer (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
+- `ui/` — Next.js viewer: profile timeline, audiences (create/members/activate), data quality dashboard, field lineage (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
 
 ## Development
 

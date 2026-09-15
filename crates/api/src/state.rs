@@ -1,6 +1,8 @@
 use sqlx::PgPool;
 use std::sync::Arc;
 
+use mb_audiences::PgAudienceRepo;
+use mb_connectors::{PgConnectorRepo, WebhookConnector};
 use mb_events::EventProducer;
 use mb_identity::PgIdentityRepo;
 use mb_mixins::PgMixinRepo;
@@ -17,4 +19,10 @@ pub struct AppState {
     pub namespaces: Arc<PgNamespaceRepo>,
     pub profiles: Arc<PgProfileRepo>,
     pub identity: Arc<PgIdentityRepo>,
+    pub audiences: Arc<PgAudienceRepo>,
+    /// Implements both `DestinationRepo` and `ActivationRepo` — one repo,
+    /// two roles, since destinations and their activation log are closely
+    /// related and there's no reason to split them into separate structs.
+    pub connectors: Arc<PgConnectorRepo>,
+    pub webhook: Arc<WebhookConnector>,
 }

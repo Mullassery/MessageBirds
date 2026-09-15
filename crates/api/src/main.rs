@@ -6,6 +6,8 @@ use std::sync::Arc;
 
 use sqlx::postgres::PgPoolOptions;
 
+use mb_audiences::PgAudienceRepo;
+use mb_connectors::{PgConnectorRepo, WebhookConnector};
 use mb_events::EventProducer;
 use mb_identity::PgIdentityRepo;
 use mb_mixins::PgMixinRepo;
@@ -45,7 +47,10 @@ async fn main() -> anyhow::Result<()> {
         mixins,
         namespaces: Arc::new(PgNamespaceRepo::new(pool.clone())),
         profiles: Arc::new(PgProfileRepo::new(pool.clone())),
-        identity: Arc::new(PgIdentityRepo::new(pool)),
+        identity: Arc::new(PgIdentityRepo::new(pool.clone())),
+        audiences: Arc::new(PgAudienceRepo::new(pool.clone())),
+        connectors: Arc::new(PgConnectorRepo::new(pool)),
+        webhook: Arc::new(WebhookConnector::new()),
     };
 
     let app = routes::router(state);

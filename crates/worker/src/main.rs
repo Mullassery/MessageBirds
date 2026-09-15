@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use sqlx::postgres::PgPoolOptions;
 
+use mb_audiences::PgAudienceRepo;
 use mb_events::EventConsumer;
 use mb_identity::PgIdentityRepo;
 use mb_merge_policy::PgMergePolicyRepo;
@@ -38,7 +39,8 @@ async fn main() -> anyhow::Result<()> {
         mixins: Arc::new(PgMixinRepo::new(pool.clone())),
         identity: Arc::new(PgIdentityRepo::new(pool.clone())),
         merge_policies: Arc::new(PgMergePolicyRepo::new(pool.clone())),
-        profiles: Arc::new(PgProfileRepo::new(pool)),
+        profiles: Arc::new(PgProfileRepo::new(pool.clone())),
+        audiences: Arc::new(PgAudienceRepo::new(pool)),
     };
 
     tracing::info!("worker consuming '{}'", mb_events::RAW_EVENTS_TOPIC);

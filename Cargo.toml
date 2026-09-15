@@ -9,6 +9,8 @@ members = [
     "crates/merge-policy",
     "crates/profile",
     "crates/events",
+    "crates/audiences",
+    "crates/connectors",
     "crates/api",
     "crates/worker",
 ]
@@ -43,3 +45,5 @@ mb-identity = { path = "crates/identity" }
 mb-merge-policy = { path = "crates/merge-policy" }
 mb-profile = { path = "crates/profile" }
 mb-events = { path = "crates/events" }
+mb-audiences = { path = "crates/audiences" }
+mb-connectors = { path = "crates/connectors" }
