@@ -8,3 +8,7 @@ dist/
 *.tsbuildinfo
 ui/AGENTS.md
 ui/CLAUDE.md
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/

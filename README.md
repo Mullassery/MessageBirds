@@ -39,6 +39,7 @@ Phase 5 adds message templates, a webhook channel adapter, and journeys: a flat-
 - `crates/worker` — Kafka consumer pipeline (validate → resolve → merge → project → evaluate audiences → start triggered journeys)
 - `crates/journeys-worker` — poller binary that advances due journey runs (the durable-execution driver)
 - `sdk/js` — TypeScript client SDK, npm-workspace-linked
+- `sdk/python` — Python client SDK ([`messagebirds` on PyPI](https://pypi.org/project/messagebirds/)), same scope as `sdk/js`: the core send-event/read-profile loop, plus typed dict mirrors of every response shape for building your own requests
 - `ui/` — Next.js viewer: profile timeline (+ consent, journeys sections), audiences (create/members/activate), data quality dashboard, field lineage, governance (policies), policy simulator, channels, templates, journeys (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
 
 ## Development

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "messagebirds"
+version = "0.1.0"
+description = "Python client SDK for MessageBirds, an open-source event-driven Customer Data & Engagement Platform"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [{ name = "Georgi Mammen Mullassery", email = "mullassery@gmail.com" }]
+requires-python = ">=3.9"
+dependencies = ["requests>=2.28"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Repository = "https://github.com/Mullassery/MessageBirds"
+Issues = "https://github.com/Mullassery/MessageBirds/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/messagebirds"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/messagebirds", "LICENSE", "README.md"]
