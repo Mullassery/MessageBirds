@@ -318,3 +318,116 @@ export interface PolicySimulateResponse {
   consent_summary: { granted: number; missing: number; total: number } | null;
   final_decision: "allow" | "deny" | "partial";
 }
+
+/** Mirrors `mb_channels::Channel`. Only `kind: "webhook"` has a real transport. */
+export interface Channel {
+  id: string;
+  tenant_id: string;
+  kind: string;
+  name: string;
+  config: unknown;
+  created_at: string;
+}
+
+/** Mirrors `mb_templates::MessageTemplate`. */
+export interface MessageTemplate {
+  id: string;
+  tenant_id: string;
+  channel_kind: string;
+  name: string;
+  version: number;
+  subject: string | null;
+  body: string;
+  created_at: string;
+}
+
+/** Mirrors `mb_templates::RenderedTemplate`. */
+export interface RenderedTemplate {
+  subject: string | null;
+  body: string;
+  missing_variables: string[];
+}
+
+/** Mirrors `mb_journeys::Trigger`. Internally tagged on `kind`, like `NodeKind`. */
+export type Trigger =
+  | { kind: "audience_entered"; audience_id: string }
+  | { kind: "event"; event_type: string };
+
+/** Mirrors `mb_journeys::SplitBranch`. */
+export interface SplitBranch {
+  next: string;
+  weight: number;
+}
+
+/**
+ * Mirrors `mb_journeys::NodeKind` — internally tagged on `kind`
+ * (not recursive, unlike `Condition`, so this is safe to tag).
+ */
+export type NodeKind =
+  | { kind: "wait"; duration_seconds: number; next: string }
+  | { kind: "condition"; condition: Condition; if_true: string; if_false: string }
+  | { kind: "action"; channel_id: string; template_id: string; next: string }
+  | { kind: "split"; branches: SplitBranch[] }
+  | { kind: "end" };
+
+/** Mirrors `mb_journeys::Node` — `NodeKind` flattened alongside `id`. */
+export type Node = { id: string } & NodeKind;
+
+export type JourneyStatus = "active" | "archived";
+
+/** Mirrors `mb_journeys::JourneyDefinition`. Graph is a flat node list, not nested. */
+export interface JourneyDefinition {
+  id: string;
+  tenant_id: string;
+  name: string;
+  version: number;
+  trigger: Trigger;
+  nodes: Node[];
+  entry_node: string;
+  status: JourneyStatus;
+  created_at: string;
+}
+
+export type RunStatus = "running" | "waiting" | "completed" | "failed";
+
+/** Mirrors `mb_journeys::JourneyRun`. */
+export interface JourneyRun {
+  id: string;
+  tenant_id: string;
+  journey_id: string;
+  profile_id: string;
+  current_node: string;
+  status: RunStatus;
+  wake_at: string | null;
+  started_at: string;
+  updated_at: string;
+}
+
+export type RunEventKind =
+  | "entered"
+  | "waited"
+  | "branched"
+  | "action_sent"
+  | "action_suppressed"
+  | "action_failed"
+  | "completed";
+
+/** Mirrors `mb_journeys::JourneyRunEvent` — one append-only step log entry. */
+export interface JourneyRunEvent {
+  id: string;
+  run_id: string;
+  node_id: string;
+  kind: RunEventKind;
+  detail: string | null;
+  created_at: string;
+}
+
+/** Mirrors `mb_journeys::ContactPolicy`. `channel_id: null` applies across all channels. */
+export interface ContactPolicy {
+  id: string;
+  tenant_id: string;
+  max_messages: number;
+  window_days: number;
+  channel_id: string | null;
+  created_at: string;
+}

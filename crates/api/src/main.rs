@@ -8,14 +8,17 @@ use std::sync::Arc;
 use sqlx::postgres::PgPoolOptions;
 
 use mb_audiences::PgAudienceRepo;
+use mb_channels::{PgChannelRepo, WebhookChannelAdapter};
 use mb_connectors::{PgConnectorRepo, WebhookConnector};
 use mb_events::EventProducer;
 use mb_governance::PgGovernanceRepo;
 use mb_identity::PgIdentityRepo;
+use mb_journeys::{Engine as JourneyEngine, PgJourneyRepo};
 use mb_mixins::PgMixinRepo;
 use mb_namespaces::PgNamespaceRepo;
 use mb_profile::PgProfileRepo;
 use mb_schema_registry::PgSchemaRepo;
+use mb_templates::PgTemplateRepo;
 
 use state::AppState;
 
@@ -52,8 +55,20 @@ async fn main() -> anyhow::Result<()> {
         identity: Arc::new(PgIdentityRepo::new(pool.clone())),
         audiences: Arc::new(PgAudienceRepo::new(pool.clone())),
         connectors: Arc::new(PgConnectorRepo::new(pool.clone())),
-        governance: Arc::new(PgGovernanceRepo::new(pool)),
+        governance: Arc::new(PgGovernanceRepo::new(pool.clone())),
         webhook: Arc::new(WebhookConnector::new()),
+        channels: Arc::new(PgChannelRepo::new(pool.clone())),
+        templates: Arc::new(PgTemplateRepo::new(pool.clone())),
+        journeys: Arc::new(PgJourneyRepo::new(
+            pool.clone(),
+            JourneyEngine {
+                pool: pool.clone(),
+                profiles: Arc::new(PgProfileRepo::new(pool.clone())),
+                templates: Arc::new(PgTemplateRepo::new(pool.clone())),
+                channels: Arc::new(PgChannelRepo::new(pool.clone())),
+                channel_adapter: Arc::new(WebhookChannelAdapter::new()),
+            },
+        )),
     };
 
     let app = routes::router(state);

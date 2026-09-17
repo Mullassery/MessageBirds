@@ -12,8 +12,12 @@ members = [
     "crates/audiences",
     "crates/connectors",
     "crates/governance",
+    "crates/channels",
+    "crates/templates",
+    "crates/journeys",
     "crates/api",
     "crates/worker",
+    "crates/journeys-worker",
 ]
 
 [workspace.package]
@@ -49,3 +53,6 @@ mb-events = { path = "crates/events" }
 mb-audiences = { path = "crates/audiences" }
 mb-connectors = { path = "crates/connectors" }
 mb-governance = { path = "crates/governance" }
+mb-channels = { path = "crates/channels" }
+mb-templates = { path = "crates/templates" }
+mb-journeys = { path = "crates/journeys" }

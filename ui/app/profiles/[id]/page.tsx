@@ -3,6 +3,7 @@ import type {
   ConsentView,
   EventSummary,
   IdentityView,
+  JourneyRun,
   Membership,
   MergeSuggestion,
   ProfileView,
@@ -25,12 +26,13 @@ export default async function ProfilePage({
     notFound();
   }
 
-  const [identity, events, suggestions, audiences, consent] = await Promise.all([
+  const [identity, events, suggestions, audiences, consent, journeyRuns] = await Promise.all([
     apiFetch<IdentityView>(`/profiles/${id}/identity`),
     apiFetch<EventSummary[]>(`/profiles/${id}/events`),
     apiFetch<MergeSuggestion[]>(`/profiles/${id}/merge-suggestions`),
     apiFetch<Membership[]>(`/profiles/${id}/audiences`),
     apiFetch<ConsentView>(`/profiles/${id}/consent?tenant_id=${profile.tenant_id}`),
+    apiFetch<JourneyRun[]>(`/profiles/${id}/journeys?tenant_id=${profile.tenant_id}`),
   ]);
 
   const boundMerge = mergeProfile.bind(null, id);
@@ -290,6 +292,48 @@ export default async function ProfilePage({
           </label>
           <button type="submit">Record consent</button>
         </form>
+      </section>
+
+      <section>
+        <h2>Journeys</h2>
+        <p className="muted">
+          Runs started automatically when this profile entered a trigger audience, or manually —
+          see <a href="/journeys">the journey list</a> to create more.
+        </p>
+        {!journeyRuns || journeyRuns.length === 0 ? (
+          <p className="muted">No journey runs for this profile.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Journey</th>
+                <th>Status</th>
+                <th>Current node</th>
+                <th>Wakes at</th>
+                <th>Started</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {journeyRuns.map((r) => (
+                <tr key={r.id}>
+                  <td className="mono">
+                    <a href={`/journeys/${r.journey_id}?tenant_id=${profile.tenant_id}`}>
+                      {r.journey_id}
+                    </a>
+                  </td>
+                  <td>{r.status}</td>
+                  <td className="mono">{r.current_node}</td>
+                  <td className="muted">{r.wake_at ?? "—"}</td>
+                  <td className="muted">{r.started_at}</td>
+                  <td>
+                    <a href={`/journeys/${r.journey_id}/runs/${r.id}`}>events</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
       <section>

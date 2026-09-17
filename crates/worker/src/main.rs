@@ -7,12 +7,15 @@ use std::sync::Arc;
 use sqlx::postgres::PgPoolOptions;
 
 use mb_audiences::PgAudienceRepo;
+use mb_channels::{PgChannelRepo, WebhookChannelAdapter};
 use mb_events::EventConsumer;
 use mb_identity::PgIdentityRepo;
+use mb_journeys::{Engine as JourneyEngine, PgJourneyRepo};
 use mb_merge_policy::PgMergePolicyRepo;
 use mb_mixins::PgMixinRepo;
 use mb_profile::PgProfileRepo;
 use mb_schema_registry::PgSchemaRepo;
+use mb_templates::PgTemplateRepo;
 
 use pipeline::{Outcome, Pipeline};
 
@@ -33,6 +36,14 @@ async fn main() -> anyhow::Result<()> {
 
     let consumer = EventConsumer::new(&kafka_brokers, &group_id, mb_events::RAW_EVENTS_TOPIC)?;
 
+    let journey_engine = JourneyEngine {
+        pool: pool.clone(),
+        profiles: Arc::new(PgProfileRepo::new(pool.clone())),
+        templates: Arc::new(PgTemplateRepo::new(pool.clone())),
+        channels: Arc::new(PgChannelRepo::new(pool.clone())),
+        channel_adapter: Arc::new(WebhookChannelAdapter::new()),
+    };
+
     let pipeline = Pipeline {
         pool: pool.clone(),
         schemas: Arc::new(PgSchemaRepo::new(pool.clone())),
@@ -40,7 +51,8 @@ async fn main() -> anyhow::Result<()> {
         identity: Arc::new(PgIdentityRepo::new(pool.clone())),
         merge_policies: Arc::new(PgMergePolicyRepo::new(pool.clone())),
         profiles: Arc::new(PgProfileRepo::new(pool.clone())),
-        audiences: Arc::new(PgAudienceRepo::new(pool)),
+        audiences: Arc::new(PgAudienceRepo::new(pool.clone())),
+        journeys: Arc::new(PgJourneyRepo::new(pool, journey_engine)),
     };
 
     tracing::info!("worker consuming '{}'", mb_events::RAW_EVENTS_TOPIC);

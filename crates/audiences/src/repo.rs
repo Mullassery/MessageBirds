@@ -1,4 +1,3 @@
-use async_recursion::async_recursion;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde_json::Value;
@@ -6,7 +5,7 @@ use sqlx::PgPool;
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::eval::{eval_attribute_op, get_field};
+use crate::eval::evaluate_condition;
 use crate::model::{
     AudienceDefinition, AudienceRow, Condition, Membership, MembershipChange, MembershipKind,
 };
@@ -66,66 +65,6 @@ pub struct PgAudienceRepo {
 impl PgAudienceRepo {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
-    }
-
-    #[async_recursion]
-    async fn matches(
-        &self,
-        condition: &Condition,
-        mixins: &Value,
-        tenant_id: Uuid,
-        profile_id: Uuid,
-    ) -> Result<bool, AudienceError> {
-        match condition {
-            Condition::Attribute {
-                mixin,
-                field,
-                op,
-                value,
-            } => {
-                let actual = get_field(mixins, mixin, field);
-                Ok(eval_attribute_op(*op, actual, value.as_ref()))
-            }
-            Condition::Event {
-                event_type,
-                within_days,
-                min_count,
-            } => {
-                let count: i64 = sqlx::query_scalar(
-                    r#"
-                    SELECT count(*) FROM events
-                    WHERE tenant_id = $1 AND profile_id = $2 AND event_type = $3
-                      AND occurred_at >= now() - ($4 || ' days')::interval
-                    "#,
-                )
-                .bind(tenant_id)
-                .bind(profile_id)
-                .bind(event_type)
-                .bind(within_days.to_string())
-                .fetch_one(&self.pool)
-                .await?;
-                Ok(count >= *min_count)
-            }
-            Condition::And(conditions) => {
-                for c in conditions {
-                    if !self.matches(c, mixins, tenant_id, profile_id).await? {
-                        return Ok(false);
-                    }
-                }
-                Ok(true)
-            }
-            Condition::Or(conditions) => {
-                for c in conditions {
-                    if self.matches(c, mixins, tenant_id, profile_id).await? {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            }
-            Condition::Not(inner) => {
-                Ok(!self.matches(inner, mixins, tenant_id, profile_id).await?)
-            }
-        }
     }
 }
 
@@ -242,9 +181,14 @@ impl AudienceRepo for PgAudienceRepo {
 
         for row in active {
             let audience: AudienceDefinition = row.try_into()?;
-            let is_member_now = self
-                .matches(&audience.conditions, mixins, tenant_id, profile_id)
-                .await?;
+            let is_member_now = evaluate_condition(
+                &self.pool,
+                &audience.conditions,
+                mixins,
+                tenant_id,
+                profile_id,
+            )
+            .await?;
 
             let existing: Option<Option<DateTime<Utc>>> = sqlx::query_scalar(
                 "SELECT exited_at FROM audience_memberships WHERE audience_id = $1 AND profile_id = $2",

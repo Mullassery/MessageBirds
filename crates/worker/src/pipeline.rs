@@ -4,9 +4,10 @@ use sqlx::PgPool;
 use thiserror::Error;
 use uuid::Uuid;
 
-use mb_audiences::{AudienceError, AudienceRepo};
+use mb_audiences::{AudienceError, AudienceRepo, MembershipKind};
 use mb_core::{EventEnvelope, MixinRef};
 use mb_identity::{IdentityError, IdentityRepo};
+use mb_journeys::{JourneyError, JourneyRepo};
 use mb_merge_policy::{MergePolicyRepo, MergePolicyRepoError};
 use mb_mixins::{validate_mixin_fields, MixinError, MixinRepo};
 use mb_profile::{ProfileError, ProfileRepo};
@@ -30,6 +31,8 @@ pub enum WorkerError {
     #[error(transparent)]
     Audience(#[from] AudienceError),
     #[error(transparent)]
+    Journey(#[from] JourneyError),
+    #[error(transparent)]
     Db(#[from] sqlx::Error),
 }
 
@@ -47,6 +50,7 @@ pub struct Pipeline {
     pub merge_policies: Arc<dyn MergePolicyRepo>,
     pub profiles: Arc<dyn ProfileRepo>,
     pub audiences: Arc<dyn AudienceRepo>,
+    pub journeys: Arc<dyn JourneyRepo>,
 }
 
 impl Pipeline {
@@ -177,9 +181,27 @@ impl Pipeline {
         // reach here without a profile row existing yet, so this checks
         // rather than assumes.
         if let Some(profile) = self.profiles.get(profile_id).await? {
-            self.audiences
+            let changes = self
+                .audiences
                 .evaluate_and_sync_membership(envelope.tenant_id.0, profile_id, &profile.mixins)
                 .await?;
+
+            // Trigger wiring: a journey whose Trigger::AudienceEntered
+            // matches an audience this profile just entered gets a new
+            // run started for it. Reuses the MembershipChange list the
+            // audience engine already computed above.
+            for change in changes {
+                if change.kind != MembershipKind::Entered {
+                    continue;
+                }
+                let journeys = self
+                    .journeys
+                    .find_by_audience_trigger(envelope.tenant_id.0, change.audience_id)
+                    .await?;
+                for journey in journeys {
+                    self.journeys.start_run(journey.id, profile_id).await?;
+                }
+            }
         }
 
         Ok(Outcome::Accepted { profile_id })

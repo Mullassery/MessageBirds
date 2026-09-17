@@ -4,7 +4,7 @@ An open-source, event-driven Customer Data & Engagement Platform. See [`docs/OCD
 
 ## Status
 
-**Phase 4 (governance)**, in progress, on top of Phases 1–3:
+**Phase 5 (engagement)**, in progress, on top of Phases 1–4:
 
 ```
 POST /events → schema validation → mixin composition → identity resolution → merge policy → profile projection
@@ -12,9 +12,12 @@ POST /events → schema validation → mixin composition → identity resolution
                                                             real-time audience evaluation
                                                                                      ↓
                                           governed activation (label policy + consent + destination capability) → webhook
+                                                                                     ↓
+                                    audience-triggered journeys (Wait/Condition/Action/Split/End,
+                                    Postgres-backed durable state machine) → templated webhook sends
 ```
 
-Phase 4 adds governance labels on mixin fields, a deny-list policy engine, an append-only consent ledger, per-profile governed activation (every send checked and explained, not silently allowed or blocked), and a policy simulator whose answer is guaranteed to match real activation since it reuses the same evaluation code. Still nothing on journeys, decisioning, AI agents, a CLI, or connectors beyond webhook. See `docs/ARCHITECTURE.md` for the full picture of what's built vs. deferred and why.
+Phase 5 adds message templates, a webhook channel adapter, and journeys: a flat-node-graph workflow engine with Postgres-backed durable execution (a `journeys-worker` poller resumes runs across a restart, verified mid-`Wait`) instead of Temporal — the spec's own language ("Temporal or an equivalent") sanctions this, and it avoids a new infra dependency plus a less-mature Rust SDK this project can't fully de-risk yet. Still nothing on decisioning, AI agents, a CLI, or connectors beyond webhook. See `docs/ARCHITECTURE.md` for the full picture of what's built vs. deferred and why.
 
 ## Architecture (this milestone)
 
@@ -29,10 +32,14 @@ Phase 4 adds governance labels on mixin fields, a deny-list policy engine, an ap
 - `crates/audiences` — rule-based audience definitions, real-time streaming membership evaluation
 - `crates/connectors` — destination plugin shape (`DestinationConnector`) + one webhook implementation, activation log with `sent`/`failed`/`blocked` status
 - `crates/governance` — label-based deny-list policy engine, append-only consent ledger, structured denial reasons
+- `crates/channels` — channel registry + `ChannelAdapter` trait, one real transport (webhook)
+- `crates/templates` — versioned message templates, hand-rolled `{{mixin_key.field}}` rendering
+- `crates/journeys` — flat-node-graph journey engine (Wait/Condition/Action/Split/End), Postgres-backed durable run state, contact-policy suppression
 - `crates/api` — Axum HTTP server (ingestion + query)
-- `crates/worker` — Kafka consumer pipeline (validate → resolve → merge → project → evaluate audiences)
+- `crates/worker` — Kafka consumer pipeline (validate → resolve → merge → project → evaluate audiences → start triggered journeys)
+- `crates/journeys-worker` — poller binary that advances due journey runs (the durable-execution driver)
 - `sdk/js` — TypeScript client SDK, npm-workspace-linked
-- `ui/` — Next.js viewer: profile timeline (+ consent section), audiences (create/members/activate), data quality dashboard, field lineage, governance (policies), policy simulator (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
+- `ui/` — Next.js viewer: profile timeline (+ consent, journeys sections), audiences (create/members/activate), data quality dashboard, field lineage, governance (policies), policy simulator, channels, templates, journeys (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
 
 ## Development
 

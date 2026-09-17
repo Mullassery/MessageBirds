@@ -78,6 +78,23 @@ Labels, marketing actions, a deny-list policy engine, an append-only consent led
 
 Verified end to end: a `Deny(PII, ADVERTISING)` policy blocked a profile carrying `email`/`first_name` from an `ADVERTISING` activation with an explicit reason, while the same audience activated fine for `ANALYTICS` (no matching policy); granting `advertising` consent removed the `ConsentMissing` reason while the `PII` policy still blocked independently; the simulator's `blocked_fields`/`consent_summary` matched the real activation outcome exactly; consent history survived a revoke (both events present, current state correctly showed the latest).
 
+## What's built (Phase 5: engagement)
+
+Message templates, one real channel transport, and durable journey orchestration — layered on Phases 1–4 without changing their event/profile/audience/governance behavior:
+
+- **Durable execution = a Postgres-backed state machine, not Temporal.** The spec's own language ("Temporal or an equivalent") sanctions this. `journey_runs.(current_node, status, wake_at)` is persisted after every node transition; a dedicated poller binary (`mb-journeys-worker`, parallel to how `api`/`worker` are already split by concern) advances every run whose `wake_at` has passed. This is real, verified durability — killing and restarting `journeys-worker` mid-`Wait` resumes the run from persisted state rather than restarting or double-firing the eventual send (verified: the event log shows `waited`/`action_sent` exactly once each across the restart). It is **not** distributed fault-tolerance across many worker replicas — a real gap, not hidden.
+- **Journey graphs are a flat node list** (`Node { id, kind }`, referenced by string id), not a nested tree — by construction, this sidesteps the exact serde `Content`-buffering compile failure `Condition` hit in Phase 3 (recursive internally-tagged enums don't compile), and matches how real workflow engines represent graphs anyway.
+- **`Condition` nodes reuse `mb_audiences::evaluate_condition` directly** — a journey branches on the same attribute/event logic an audience can be built from, guaranteed identical semantics rather than a second copy. (Promoted from a private method on the audience repo to a public function this phase.)
+- **One real channel transport: webhook** (`mb-channels`), same honest pattern as Phase 3's one destination connector — genuinely POSTs the rendered message and is verified against a real local listener, not a fake "looks like it sends" shim. Other `kind`s can be registered but sending against them fails rather than silently succeeding.
+- **Templates** (`mb-templates`) — hand-rolled `{{mixin_key.field}}` substitution against a profile's composed mixins (no regex dependency), versioned per `(tenant, name)`; a journey's Action node pins to a specific template *id*, so past runs keep using the version they were authored against even after a newer version is registered.
+- **Split nodes are the only experimentation primitive** — deterministic weighted branching (FNV-1a hash of `profile_id + node_id`, not `std`'s unspecified-seed `DefaultHasher`, so the same profile always lands in the same branch across restarts). No statistical-significance tracking, bandits, or holdout reporting.
+- **No visual canvas** — journeys are authored as JSON (a flat node list), matching the spec's own principle that the canvas must not be the source of truth. The UI shows/edits the JSON and renders a read-only node list.
+- **Contact policy** (`mb_journeys::ContactPolicy`) — `(tenant, max_messages, window_days, channel_id?)`; a send that would exceed the trailing-window count is suppressed (`messages_sent.status = 'suppressed'`), not the whole run blocked. Verified: a second run's Action node was suppressed while the run still reached `End`.
+- **Idempotent sends under retry** — `messages_sent` has `UNIQUE(run_id, node_id)`; the Action node does a reservation insert (`ON CONFLICT DO NOTHING RETURNING id`) before calling the channel adapter, so a crash between "sent" and "advanced" can't double-send on resume — the same pattern already proven for `persist_event`.
+- **Trigger wiring** — `crates/worker/src/pipeline.rs` starts a run automatically for every `Entered` membership change matching a journey's `AudienceEntered` trigger, reusing data the pipeline already computes; `POST /journeys/{id}/start` is a legitimate manual-enrollment escape hatch, not just a test hook.
+
+Verified end to end (`scripts`-style Python check against a live stack, not curl one-liners): registering a channel/template/audience-triggered journey (`Wait → Action → Split → End`), sending an event that entered the trigger audience, confirming the run started automatically and genuinely parked at `Wait` with a future `wake_at`, killing and restarting `journeys-worker` mid-wait and confirming the run resumed (not restarted, not double-fired), the webhook listener receiving the exact rendered body (`"Hi Jane!"` from `core/person@1.0.first_name`), and a tight contact policy suppressing a second run's send while that run still completed.
+
 ## Deployment (this phase)
 
 Minimal dev mode only: Postgres + Redpanda via `docker-compose.yml`, `api` and `worker` run directly with `cargo run`. The heavier "enterprise" deployment described in the product spec (Kafka cluster, Flink, Temporal, ClickHouse, object storage, Kubernetes) is not needed to prove the foundation and isn't set up yet.
@@ -92,7 +109,11 @@ This is deliberate, not an oversight — the product spec's own guidance is to g
 - **Schema field labels aren't enforced** — only mixin field labels feed policy evaluation; a schema's own `labels` are stored, not acted on
 - **Policy engine has no exceptions, inheritance, or versioning** — a flat `(label, action, effect, priority)` deny-list only
 - **Consent purpose mapping is fixed code**, not tenant-configurable, and there's no jurisdiction-aware consent logic beyond storing the field
-- **Journeys, durable orchestration (Temporal), visual canvas**
+- **Real SMS/email/push channel adapters** — only webhook has a real transport; other channel `kind`s can be registered but sending against them fails rather than silently succeeding
+- **Statistical experimentation** — Split nodes do deterministic weighted branching only; no significance tracking, bandits, or holdout reporting
+- **Visual journey canvas** — journeys are authored/viewed as a flat JSON node list
+- **Distributed journey-worker fault tolerance** — the Postgres-backed state machine survives one worker's restart/crash; it is not yet safe to run many `journeys-worker` replicas concurrently against the same runs
+- **`Event` journey triggers** — the `Trigger` enum has an `Event` variant, but only `AudienceEntered` is wired into the worker pipeline
 - **Decisioning** (rules, scoring, next-best-action)
 - **AI agents, AI assistant, model provider abstraction**
 - **CLI, admin UI beyond the profile/audience/data-quality/governance/simulator viewers**
@@ -110,7 +131,7 @@ Phases as described in the product spec, in order:
 2. **Identity** — done: deterministic matching, confidence-scored merge suggestions, explicit merge/split, profile timeline UI. Not done: automatic probabilistic resolution (by design — see above), full lineage (every observation, not just the winner)
 3. **CDP** — done: rule-based audiences with real-time streaming membership, a data quality dashboard, field lineage, one webhook destination connector. Not done: sequence conditions, membership-as-Kafka-events, any connector beyond webhook, batch/scheduled segmentation
 4. **Governance** — done: labels, marketing actions, a deny-list policy engine, append-only consent, governed per-profile activation, a policy simulator matching real activation behavior. Not done: exceptions/inheritance/policy versioning, schema-field-label enforcement, tenant-configurable consent purposes
-5. **Engagement** — message templates, channel adapters (email/push/SMS/WhatsApp), journeys, Temporal-backed durable orchestration
+5. **Engagement** — done: message templates (versioned, journey-pinned), one real channel transport (webhook), journeys as a flat node graph (Wait/Condition/Action/Split/End), Postgres-backed durable orchestration (verified across a worker restart mid-wait), contact-policy suppression. Not done: real SMS/email/push adapters, statistical experimentation, visual canvas, multi-replica journey-worker fault tolerance, `Event` triggers
 6. **Decisioning** — rules, scoring, next-best-action, frequency/contact policy
 7. **AI** — AI assistant, tool-using agents, agent governance, model provider abstraction
 8. **Enterprise** — multi-tenancy enforcement, RBAC/SSO, Terraform provider, GitOps, Kubernetes, enterprise connectors (Salesforce, Snowflake, BigQuery, ...)

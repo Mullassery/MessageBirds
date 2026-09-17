@@ -107,6 +107,39 @@ impl From<mb_governance::GovernanceError> for ApiError {
     }
 }
 
+impl From<mb_channels::ChannelRepoError> for ApiError {
+    fn from(e: mb_channels::ChannelRepoError) -> Self {
+        use mb_channels::ChannelRepoError::*;
+        match e {
+            NotFound(_) => ApiError::NotFound(e.to_string()),
+            Db(_) => ApiError::Internal(e.to_string()),
+        }
+    }
+}
+
+impl From<mb_templates::TemplateError> for ApiError {
+    fn from(e: mb_templates::TemplateError) -> Self {
+        use mb_templates::TemplateError::*;
+        match e {
+            NotFound(_) | NoVersions(_) => ApiError::NotFound(e.to_string()),
+            Db(_) => ApiError::Internal(e.to_string()),
+        }
+    }
+}
+
+impl From<mb_journeys::JourneyError> for ApiError {
+    fn from(e: mb_journeys::JourneyError) -> Self {
+        use mb_journeys::JourneyError::*;
+        match e {
+            NotFound(_) | RunNotFound(_) | ProfileNotFound(_) => ApiError::NotFound(e.to_string()),
+            UnknownNode(_) => ApiError::BadRequest(e.to_string()),
+            Corrupt(_) | Audience(_) | Profile(_) | Template(_) | Channel(_) | Db(_) => {
+                ApiError::Internal(e.to_string())
+            }
+        }
+    }
+}
+
 impl From<sqlx::Error> for ApiError {
     fn from(e: sqlx::Error) -> Self {
         ApiError::Internal(e.to_string())

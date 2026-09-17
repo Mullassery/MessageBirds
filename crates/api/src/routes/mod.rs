@@ -1,13 +1,16 @@
 mod audiences;
+mod channels;
 mod dead_letter;
 mod destinations;
 mod events;
 mod governance;
 mod health;
+mod journeys;
 mod mixins;
 mod namespaces;
 mod profiles;
 mod schemas;
+mod templates;
 
 use axum::routing::{get, post};
 use axum::Router;
@@ -42,6 +45,10 @@ pub fn router(state: AppState) -> Router {
         .route(
             "/profiles/:id/consent",
             get(governance::get_profile_consent),
+        )
+        .route(
+            "/profiles/:id/journeys",
+            get(journeys::get_profile_journeys),
         )
         .route(
             "/schemas",
@@ -81,5 +88,25 @@ pub fn router(state: AppState) -> Router {
         )
         .route("/consent", post(governance::record_consent))
         .route("/policy-simulate", post(governance::policy_simulate))
+        .route(
+            "/channels",
+            get(channels::list_channels).post(channels::create_channel),
+        )
+        .route(
+            "/templates",
+            get(templates::list_templates).post(templates::create_template),
+        )
+        .route(
+            "/journeys",
+            get(journeys::list_journeys).post(journeys::create_journey),
+        )
+        .route("/journeys/:id", get(journeys::get_journey))
+        .route("/journeys/:id/runs", get(journeys::get_journey_runs))
+        .route("/journeys/:id/start", post(journeys::start_journey))
+        .route("/journey-runs/:id/events", get(journeys::get_run_events))
+        .route(
+            "/contact-policies",
+            get(journeys::list_contact_policies).post(journeys::create_contact_policy),
+        )
         .with_state(state)
 }

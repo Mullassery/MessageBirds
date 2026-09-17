@@ -10,7 +10,7 @@ mod eval;
 mod model;
 mod repo;
 
-pub use eval::{eval_attribute_op, get_field};
+pub use eval::{eval_attribute_op, evaluate_condition, get_field};
 pub use model::{
     AttributeOp, AudienceDefinition, AudienceStatus, Condition, Membership, MembershipChange,
     MembershipEvent, MembershipKind,

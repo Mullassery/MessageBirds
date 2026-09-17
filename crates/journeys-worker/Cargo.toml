@@ -1,0 +1,21 @@
+[package]
+name = "mb-journeys-worker"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "journeys-worker"
+path = "src/main.rs"
+
+[dependencies]
+mb-channels.workspace = true
+mb-journeys.workspace = true
+mb-profile.workspace = true
+mb-templates.workspace = true
+tokio.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+sqlx.workspace = true

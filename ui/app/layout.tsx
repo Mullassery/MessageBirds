@@ -17,7 +17,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <p className="muted">
             Profile lookup · <a href="/audiences">Audiences</a> ·{" "}
             <a href="/data-quality">Data quality</a> · <a href="/governance">Governance</a> ·{" "}
-            <a href="/policy-simulator">Policy simulator</a>
+            <a href="/policy-simulator">Policy simulator</a> ·{" "}
+            <a href="/channels">Channels</a> · <a href="/templates">Templates</a> ·{" "}
+            <a href="/journeys">Journeys</a>
           </p>
         </header>
         {children}

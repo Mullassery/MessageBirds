@@ -1002,15 +1002,18 @@ dependencies = [
  "axum",
  "chrono",
  "mb-audiences",
+ "mb-channels",
  "mb-connectors",
  "mb-core",
  "mb-events",
  "mb-governance",
  "mb-identity",
+ "mb-journeys",
  "mb-mixins",
  "mb-namespaces",
  "mb-profile",
  "mb-schema-registry",
+ "mb-templates",
  "serde",
  "serde_json",
  "sqlx",
@@ -1028,6 +1031,21 @@ dependencies = [
  "async-recursion",
  "async-trait",
  "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "mb-channels"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "reqwest",
  "serde",
  "serde_json",
  "sqlx",
@@ -1108,6 +1126,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "mb-journeys"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "mb-audiences",
+ "mb-channels",
+ "mb-profile",
+ "mb-templates",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "mb-journeys-worker"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "mb-channels",
+ "mb-journeys",
+ "mb-profile",
+ "mb-templates",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "mb-merge-policy"
 version = "0.1.0"
 dependencies = [
@@ -1181,19 +1232,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "mb-templates"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "mb-worker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
  "mb-audiences",
+ "mb-channels",
  "mb-core",
  "mb-events",
  "mb-identity",
+ "mb-journeys",
  "mb-merge-policy",
  "mb-mixins",
  "mb-profile",
  "mb-schema-registry",
+ "mb-templates",
  "serde",
  "serde_json",
  "sqlx",
