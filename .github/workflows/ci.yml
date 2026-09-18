@@ -12,6 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install librdkafka build dependencies
+        # rdkafka-sys's cmake-build compiles librdkafka from its vendored
+        # C sources, and librdkafka's own CMake config requires curl.h
+        # unconditionally (for OAUTHBEARER/OIDC support) regardless of
+        # which Rust-level features are enabled. ubuntu-latest runners
+        # don't ship it by default. This was already broken pre-Phase-6 —
+        # not something this session introduced — but the new CI badge
+        # makes it visible, so fixing it now.
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -86,12 +96,20 @@ jobs:
     # Command Line Tools, no XCTest/swift-testing), so this job is what
     # actually exercises Tests/MessageBirdsAnalyticsTests for the first
     # time, not a redundant check.
-    runs-on: macos-14
+    runs-on: macos-15
     defaults:
       run:
         working-directory: sdk/ios
     steps:
       - uses: actions/checkout@v4
+
+      # macos-15's default-selected Xcode doesn't always bundle the
+      # Testing module (Tests/MessageBirdsAnalyticsTests uses
+      # `import Testing`, not XCTest) — pin explicitly rather than
+      # depend on whichever Xcode happens to be pre-selected.
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
       - name: swift build
         run: swift build
