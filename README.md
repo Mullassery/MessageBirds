@@ -1,10 +1,16 @@
 # MessageBirds
 
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![CI](https://github.com/Mullassery/MessageBirds/actions/workflows/ci.yml/badge.svg)](https://github.com/Mullassery/MessageBirds/actions/workflows/ci.yml)
+[![messagebirds on PyPI](https://img.shields.io/pypi/v/messagebirds.svg?label=messagebirds)](https://pypi.org/project/messagebirds/)
+
 An open-source, event-driven Customer Data & Engagement Platform. See [`docs/OCDS.md`](docs/OCDS.md) for the canonical data model and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the reference architecture and phased roadmap.
 
 ## Status
 
-**Phase 5 (engagement)**, in progress, on top of Phases 1–4:
+Phases 1–5 (core event platform → identity → CDP → governance → engagement) are built; since Phase 5, client-side collection (`sdk/web`/`sdk/ios`/`sdk/android`), an edge ingestion gateway, and bulk activation through PyReverseETL have been layered on top (see below). `docs/ARCHITECTURE.md` is the source of truth for what's real vs. deferred at each layer — this file is a summary, not a substitute for it.
+
+Pipeline, as of Phase 5:
 
 ```
 POST /events → schema validation → mixin composition → identity resolution → merge policy → profile projection

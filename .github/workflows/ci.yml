@@ -30,7 +30,7 @@ jobs:
         run: cargo test --workspace
 
   js:
-    name: JS (SDK typecheck, UI typecheck + build)
+    name: JS (SDK/web/gateway typecheck+test, UI typecheck + build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,11 +43,68 @@ jobs:
       - name: npm install (workspaces)
         run: npm install
 
-      - name: SDK build (tsc)
+      - name: sdk/js build (tsc)
         run: npm run build --workspace=sdk/js
+
+      - name: sdk/web typecheck + test
+        run: |
+          npm exec --workspace=sdk/web -- tsc --noEmit
+          npm run test --workspace=sdk/web
+
+      - name: edge/ingest-gateway typecheck + test
+        run: |
+          npm run typecheck --workspace=edge/ingest-gateway
+          npm run test --workspace=edge/ingest-gateway
 
       - name: UI typecheck
         run: npm exec --workspace=ui -- tsc --noEmit
 
       - name: UI build
         run: npm run build --workspace=ui
+
+  python-sdk:
+    name: sdk/python (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install sdk/python (editable, dev extras)
+        run: pip install -e "./sdk/python[dev]"
+
+      - name: pytest
+        run: pytest sdk/python
+
+  ios-sdk:
+    name: sdk/ios (swift build + test)
+    # Needs a real macOS runner with full Xcode — this is exactly the
+    # environment that wasn't available when sdk/ios was written (only
+    # Command Line Tools, no XCTest/swift-testing), so this job is what
+    # actually exercises Tests/MessageBirdsAnalyticsTests for the first
+    # time, not a redundant check.
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: sdk/ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: swift build
+        run: swift build
+
+      - name: swift test
+        run: swift test
+
+      - name: swift run mb-verify
+        run: swift run mb-verify
+
+  # sdk/android is intentionally not built in CI yet — it was written
+  # without access to gradle/kotlinc/the Android SDK and hasn't been
+  # compiled anywhere. Wiring up android-actions/setup-android is real
+  # future work, not done here alongside a doc-only change, so this stays
+  # a disclosed gap (see docs/ARCHITECTURE.md) rather than a quiet claim
+  # of coverage.
