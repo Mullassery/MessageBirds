@@ -1,0 +1,8 @@
+name = "messagebirds-ingest-gateway"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+# Points at plain `mb-api` for local dev; override for a real deployment
+# (not done this phase — see docs/ARCHITECTURE.md).
+MESSAGEBIRDS_API_URL = "http://localhost:8080"

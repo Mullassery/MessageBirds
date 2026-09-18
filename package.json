@@ -3,6 +3,8 @@
   "private": true,
   "workspaces": [
     "sdk/js",
+    "sdk/web",
+    "edge/ingest-gateway",
     "ui"
   ]
 }

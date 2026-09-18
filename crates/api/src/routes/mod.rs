@@ -75,6 +75,10 @@ pub fn router(state: AppState) -> Router {
             post(destinations::activate_audience),
         )
         .route(
+            "/audiences/:id/activate-via-reverse-etl",
+            post(destinations::activate_audience_via_reverse_etl),
+        )
+        .route(
             "/destinations",
             get(destinations::list_destinations).post(destinations::create_destination),
         )

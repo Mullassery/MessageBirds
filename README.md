@@ -19,6 +19,8 @@ POST /events → schema validation → mixin composition → identity resolution
 
 Phase 5 adds message templates, a webhook channel adapter, and journeys: a flat-node-graph workflow engine with Postgres-backed durable execution (a `journeys-worker` poller resumes runs across a restart, verified mid-`Wait`) instead of Temporal — the spec's own language ("Temporal or an equivalent") sanctions this, and it avoids a new infra dependency plus a less-mature Rust SDK this project can't fully de-risk yet. Still nothing on decisioning, AI agents, a CLI, or connectors beyond webhook. See `docs/ARCHITECTURE.md` for the full picture of what's built vs. deferred and why.
 
+Since Phase 5: client-side event collection (`sdk/web`, `sdk/ios` verified; `sdk/android` written but not build-verified — no Android toolchain in this environment), an edge ingestion gateway that terminates CORS for browser SDKs hitting `mb-api` directly (built and verified locally, **not deployed**), and bulk audience activation through [PyReverseETL](https://github.com/Mullassery/PyReverseETL)'s real sync engine as a second destination kind alongside webhook. See `docs/ARCHITECTURE.md`'s "Collect & Activate infrastructure" section for what's real, what's disclosed-unverified, and two integration bugs discovered (and worked around) in PyReverseETL along the way.
+
 ## Architecture (this milestone)
 
 - `crates/core` — canonical domain types (event envelope, identity refs, tenant/workspace/environment ids)
@@ -30,7 +32,7 @@ Phase 5 adds message templates, a webhook channel adapter, and journeys: a flat-
 - `crates/profile` — unified customer profile projection, field-level provenance, merge-suggestion similarity scoring
 - `crates/events` — Kafka/Redpanda producer/consumer wrappers
 - `crates/audiences` — rule-based audience definitions, real-time streaming membership evaluation
-- `crates/connectors` — destination plugin shape (`DestinationConnector`) + one webhook implementation, activation log with `sent`/`failed`/`blocked` status
+- `crates/connectors` — destination plugin shape (`DestinationConnector`) + one webhook implementation, activation log with `sent`/`failed`/`blocked` status; a second bulk-sync destination kind (`pyreverseetl`), activated through a separate endpoint since it doesn't fit the per-record connector shape
 - `crates/governance` — label-based deny-list policy engine, append-only consent ledger, structured denial reasons
 - `crates/channels` — channel registry + `ChannelAdapter` trait, one real transport (webhook)
 - `crates/templates` — versioned message templates, hand-rolled `{{mixin_key.field}}` rendering
@@ -40,6 +42,10 @@ Phase 5 adds message templates, a webhook channel adapter, and journeys: a flat-
 - `crates/journeys-worker` — poller binary that advances due journey runs (the durable-execution driver)
 - `sdk/js` — TypeScript client SDK, npm-workspace-linked
 - `sdk/python` — Python client SDK ([`messagebirds` on PyPI](https://pypi.org/project/messagebirds/)), same scope as `sdk/js`: the core send-event/read-profile loop, plus typed dict mirrors of every response shape for building your own requests
+- `sdk/web` — browser event-collection SDK (`@messagebirds/web`): a queued, retrying `POST /events` client with `localStorage` persistence and a `sendBeacon` unload flush
+- `sdk/ios` — Swift package (`MessageBirdsAnalytics`) with the same queue/retry design; `swift build` and a plain-executable check (`swift run mb-verify`) pass — `swift test` can't run without full Xcode
+- `sdk/android` — Kotlin module with the same design, written but not yet build-verified (no Android toolchain available where it was written — see `sdk/android/README.md`)
+- `edge/ingest-gateway` — Cloudflare Worker: CORS + envelope-shape validation in front of `mb-api`'s `POST /events`, for browser SDKs that can't call `mb-api` directly. Built and verified via `wrangler dev`, **not deployed**
 - `ui/` — Next.js viewer: profile timeline (+ consent, journeys sections), audiences (create/members/activate), data quality dashboard, field lineage, governance (policies), policy simulator, channels, templates, journeys (Server Components/Actions only — no client-side calls to `mb-api`, so no CORS needed)
 
 ## Development

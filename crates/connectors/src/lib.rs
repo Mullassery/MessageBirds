@@ -8,6 +8,10 @@ mod model;
 mod repo;
 mod webhook;
 
-pub use model::{ActivationRecord, ActivationStatus, Destination, WEBHOOK_KIND};
-pub use repo::{ActivationRepo, ConnectorRepoError, DestinationRepo, PgConnectorRepo};
+pub use model::{
+    ActivationRecord, ActivationStatus, Destination, ExportRow, PYREVERSEETL_KIND, WEBHOOK_KIND,
+};
+pub use repo::{
+    ActivationRepo, ConnectorRepoError, DestinationRepo, PgConnectorRepo, PyReverseEtlExportRepo,
+};
 pub use webhook::{ConnectorError, DestinationConnector, WebhookConnector};
