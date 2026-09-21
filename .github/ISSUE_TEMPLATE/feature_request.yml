@@ -1,0 +1,49 @@
+name: Feature request
+description: Propose something new or a change in behavior
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: check `docs/ARCHITECTURE.md` and `ROADMAP_HONEST.md` — the thing you want
+        might already be a disclosed, deliberate gap with a stated reason it isn't built yet, in
+        which case the useful conversation is "should the reason change" rather than "please add
+        this."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do that the project doesn't support today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to see built? Be as concrete as you can.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds you're using today, or other approaches you considered.
+    validations:
+      required: false
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - crates/ (Rust workspace)
+        - sdk/js
+        - sdk/web
+        - sdk/python
+        - sdk/ios
+        - sdk/android
+        - edge/ingest-gateway
+        - ui/
+        - docs
+        - other
+    validations:
+      required: true

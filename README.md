@@ -75,6 +75,19 @@ npm run smoke-test --workspace=sdk/js
 npm run dev --workspace=ui   # http://localhost:3000
 ```
 
+## Docs
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — reference architecture, phase-by-phase, what's real vs. deferred
+- [`docs/architecture/README.md`](docs/architecture/README.md) — data-flow and journey-durability diagrams
+- [`docs/OCDS.md`](docs/OCDS.md) — canonical data model
+- [`ROADMAP_HONEST.md`](ROADMAP_HONEST.md) — status buckets, technical debt, security findings (file:line specifics)
+- [`SECURITY.md`](SECURITY.md) — current security posture and how to report a vulnerability
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — dev setup, test commands, PR expectations
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Bug/security reports: see [`SECURITY.md`](SECURITY.md) — please don't file security issues as public GitHub issues.
+
 ## License
 
 Apache-2.0. See [`LICENSE`](LICENSE).
