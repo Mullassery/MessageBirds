@@ -75,6 +75,11 @@ npm run smoke-test --workspace=sdk/js
 npm run dev --workspace=ui   # http://localhost:3000
 ```
 
+Before pointing this at real PII, set `MB_IDENTITY_HASH_PEPPER` (a random per-deployment
+secret) on the `api`, `worker`, and `journeys-worker` processes — it's mixed into the
+identity-matching hash in `crates/identity/src/hash.rs`. Leaving it unset reproduces the
+old unsalted behavior; see `SECURITY.md`.
+
 ## Docs
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — reference architecture, phase-by-phase, what's real vs. deferred

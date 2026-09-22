@@ -206,7 +206,14 @@ pub async fn get_merge_suggestions(
         .filter(|s| s.score > 0.3)
         .collect();
 
-    suggestions.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
+    // `partial_cmp` returns `None` for `NaN`; treat any `NaN` score as
+    // equal-rank rather than panicking the request handler on
+    // network-influenced data (see ROADMAP_HONEST.md).
+    suggestions.sort_by(|a, b| {
+        b.score
+            .partial_cmp(&a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     Ok(Json(suggestions))
 }
 

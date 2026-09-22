@@ -18,14 +18,19 @@ hypothetical risks:
   shape only, then forwards to `mb-api`. It has also never been deployed (no `wrangler deploy`
   has been run against a real Cloudflare account), which limits real-world exposure to zero today,
   but the code itself has no credential check to rely on once it is deployed.
-- **Identity-matching hashes are unsalted.** `crates/identity/src/hash.rs` hashes email/phone/etc.
-  with plain `SHA-256(namespace:value)`. Because these inputs are low-entropy and guessable, this
-  is not a privacy-preserving hash — see `ROADMAP_HONEST.md`'s Security section for the full
-  explanation and a proposed fix (keyed HMAC).
-- **`sqlx 0.7.4`** (pinned in `Cargo.toml`) has a known, fixed vulnerability
-  (RUSTSEC-2024-0363, binary protocol misinterpretation via truncating/overflowing casts), fixed
-  in `sqlx >= 0.8.1`. Not yet upgraded — it's a real, multi-crate migration, tracked in
-  `ROADMAP_HONEST.md`.
+- **Identity-matching hashes support an optional per-deployment pepper, but it defaults to off.**
+  `crates/identity/src/hash.rs` hashes email/phone/etc. with
+  `SHA-256(pepper || ":" || namespace || ":" || value)`, where `pepper` comes from the
+  `MB_IDENTITY_HASH_PEPPER` environment variable (fixed 2026-09-22). **You must set this variable**
+  in any environment that touches real PII, or the hash is still plain, unkeyed
+  `SHA-256(namespace:value)` — low-entropy inputs remain crackable by a reader with database
+  access via a precomputed dictionary. Setting the pepper for the first time on a deployment that
+  already has identity data written is a breaking change (old hashes stop matching); there is no
+  re-hash migration tool, so plan that separately. See `ROADMAP_HONEST.md`'s Security section for
+  the full threat model.
+- **`sqlx` was upgraded from `0.7.4` to `0.8.6`** (fixed 2026-09-22), resolving RUSTSEC-2024-0363
+  (binary protocol misinterpretation via truncating/overflowing casts). No breaking API changes
+  in `sqlx` 0.8 affected this codebase (no compile-time `query!`/`query_as!` macros are used).
 - **No rate limiting anywhere** — not in `mb-api`, not in `edge/ingest-gateway`.
 - **No multi-tenancy isolation** beyond the `tenant_id` column convention described above.
 
@@ -75,8 +80,15 @@ backport to yet.
 
 ## Dependency scanning
 
-`cargo audit`, `npm audit`, and `pip-audit` were run against this repository on 2026-09-22 (see
-`ROADMAP_HONEST.md` for exact findings). `npm audit` and `pip-audit` reported zero vulnerabilities.
-`cargo audit` found one real, fixable vulnerability (`sqlx`, above) and one transitive, unmaintained
-crate warning (`paste`). Dependabot (`.github/dependabot.yml`) is configured to open PRs for future
-dependency updates across cargo, npm, pip, swift, and gradle.
+`cargo audit`, `npm audit`, and `pip-audit` were run against this repository on 2026-09-22. `npm
+audit` and `pip-audit` reported zero vulnerabilities. `cargo audit` originally found two real
+findings (`sqlx`, above, and an unreachable `rsa` transitive dependency pulled in only via
+`sqlx-mysql`'s unactivated `mysql` feature — see `ROADMAP_HONEST.md`) plus one transitive,
+unmaintained crate warning (`paste`). As of the same day: the `sqlx` bump above fixes the real
+vulnerability (and incidentally dropped the `paste` dependency entirely), and `.cargo/audit.toml`
+documents and suppresses the unreachable `rsa` finding (it cannot be removed from `Cargo.lock`
+itself — both `cargo update` and a full lockfile regeneration were tried and neither drops it,
+since `sqlx` declares it as an optional dependency regardless of this workspace's enabled
+features). `cargo audit` now reports 0 vulnerabilities and 0 warnings. Dependabot
+(`.github/dependabot.yml`) is configured to open PRs for future dependency updates across cargo,
+npm, pip, swift, and gradle.

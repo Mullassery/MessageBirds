@@ -1,0 +1,24 @@
+# Config for `cargo audit` (https://docs.rs/cargo-audit).
+#
+# See ROADMAP_HONEST.md's "Security findings" #2 for the full investigation:
+# `rsa` (RUSTSEC-2023-0071) is pulled into `Cargo.lock` only as an optional,
+# unactivated transitive dependency of `sqlx-mysql`, which is itself an
+# optional dependency of `sqlx` gated behind sqlx's "mysql" feature. This
+# workspace only enables sqlx's "postgres" feature (`Cargo.toml`), and
+# `cargo tree -i rsa` / `cargo tree | grep mysql` both show nothing — neither
+# crate is reachable from any target this workspace actually builds.
+#
+# This entry is *not* removable by editing `Cargo.lock` or running
+# `cargo update`/`cargo generate-lockfile`: both were tried on 2026-09-22 and
+# neither dropped the entry, because Cargo.lock resolves versions for every
+# optional dependency `sqlx` declares (mysql, postgres, sqlite, ...)
+# regardless of which features this workspace activates — that's Cargo's
+# lockfile behavior, not something fixable downstream short of patching
+# `sqlx` itself. Ignoring it here (rather than leaving it to silently
+# clutter `cargo audit` output) keeps that output meaningful for advisories
+# that are actually reachable.
+[advisories]
+ignore = [
+    # rsa: Marvin Attack timing side-channel. Unreachable — see comment above.
+    "RUSTSEC-2023-0071",
+]
