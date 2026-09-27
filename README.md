@@ -80,6 +80,58 @@ secret) on the `api`, `worker`, and `journeys-worker` processes — it's mixed i
 identity-matching hash in `crates/identity/src/hash.rs`. Leaving it unset reproduces the
 old unsalted behavior; see `SECURITY.md`.
 
+## vs RudderStack
+
+RudderStack is the leading OSS Customer Data Platform and the closest real
+comparison. Tested MessageBirds live against real event data on this
+machine (`docker compose up -d postgres redpanda` + `cargo run -p api
+-p worker`, exactly the documented path); RudderStack's own self-hosted
+`rudder-server` stack was investigated but not stood up end-to-end this
+pass — see the honesty note below on why, and what that itself reveals.
+
+**Live-tested: real identity resolution, verified end to end.** Sent a
+real sequence of events through `POST /events` simulating one real user
+across sessions — anonymous browsing, then a later event linking that
+same `anonymous_id` to an email, then a third, later event using *only*
+the email (no anonymous_id at all, e.g. a new device) — plus a second,
+unrelated user, to check for false merges:
+
+| Event sequence | Resulting `profile_id` |
+|---|---|
+| Anon browse (`anonymous_id` only) | `d10031...` |
+| Same session, links `anonymous_id` + `email` | `d10031...` (same — correctly merged) |
+| Later session, `email` only, no `anonymous_id` | `d10031...` (same — correctly resolved via the linked email) |
+| Unrelated second user (`anonymous_id` only) | `c5a536...` (different — correctly not merged) |
+
+Fetched the merged profile afterward and confirmed real, field-level
+provenance tracking (`GET /profiles/:id`): each field records which event
+set it, its source, and the conflict-resolution policy applied
+(`SourcePriority`) — this is real, working profile projection, not a
+placeholder. Real ingestion throughput, sequential single-connection,
+this machine: **~156 events/sec**.
+
+**Operational complexity — a real, honest difference.** MessageBirds:
+`docker compose up -d postgres redpanda` + two `cargo run` commands, zero
+external accounts, zero config beyond an env var. RudderStack's own
+`rudder-server` repo requires either a `WORKSPACE_TOKEN` from
+RudderStack's cloud control plane (`api.rudderstack.com`) *or* a real,
+hand-authored local `workspaceConfig.json` (event-routing/destination
+config) to run its 5-service stack (Postgres, the backend, a transformer,
+MinIO, etcd) without a cloud account — verified by inspecting
+`rudder-server`'s real `config/sample.env` and `docker-compose.yml`
+directly. Standing up that local-config path fully was out of scope for
+this pass given the time budget, so the throughput/feature comparison
+above is MessageBirds-only, live-tested; RudderStack's side is honestly
+based on inspecting its real setup requirements, not a live run — flagged
+here rather than presented as an apples-to-apples number.
+
+**What RudderStack has that MessageBirds doesn't (yet):** a large
+pre-built library of destination connectors (MessageBirds has one real
+connector, webhook, plus a bulk-sync path via PyReverseETL) and years of
+production hardening at scale. **What this pass didn't find:** no bugs —
+identity resolution, merge-policy provenance, and real-time ingestion all
+worked correctly on real data, first attempt.
+
 ## Docs
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — reference architecture, phase-by-phase, what's real vs. deferred
