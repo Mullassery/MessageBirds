@@ -1,5 +1,7 @@
 # MessageBirds
 
+[![Grapify](https://img.shields.io/badge/Grapify-Code%20Scan-purple)](https://grapify.ai)
+
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![CI](https://github.com/Mullassery/MessageBirds/actions/workflows/ci.yml/badge.svg)](https://github.com/Mullassery/MessageBirds/actions/workflows/ci.yml)
 [![messagebirds on PyPI](https://img.shields.io/pypi/v/messagebirds.svg?label=messagebirds)](https://pypi.org/project/messagebirds/)
