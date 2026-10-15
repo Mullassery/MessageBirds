@@ -10,7 +10,7 @@ jobs:
     name: Rust (fmt, clippy, test)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install librdkafka build dependencies
         # rdkafka-sys's cmake-build compiles librdkafka from its vendored
@@ -43,7 +43,7 @@ jobs:
     name: JS (SDK/web/gateway typecheck+test, UI typecheck + build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Node
         uses: actions/setup-node@v4
@@ -76,7 +76,7 @@ jobs:
     name: sdk/python (pytest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Python
         uses: actions/setup-python@v5
@@ -101,7 +101,7 @@ jobs:
       run:
         working-directory: sdk/ios
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # macos-15's default-selected Xcode doesn't always bundle the
       # Testing module (Tests/MessageBirdsAnalyticsTests uses
