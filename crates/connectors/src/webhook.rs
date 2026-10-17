@@ -7,6 +7,8 @@ use thiserror::Error;
 pub enum ConnectorError {
     #[error("destination config is missing or has an invalid '{0}' field")]
     InvalidConfig(&'static str),
+    #[error("destination url rejected by outbound network policy: {0}")]
+    UnsafeUrl(String),
     #[error("delivery failed: {0}")]
     Delivery(#[from] reqwest::Error),
     #[error("destination responded with status {0}")]
@@ -31,9 +33,16 @@ pub struct WebhookConnector {
 
 impl WebhookConnector {
     pub fn new() -> Self {
+        let builder = reqwest::Client::builder().timeout(Duration::from_secs(10));
+        // Tenant-configured URLs are untrusted; refuse private/loopback/
+        // link-local targets unless explicitly opted out.
+        let builder = if mb_net_guard::guard_enabled() {
+            mb_net_guard::harden_client(builder)
+        } else {
+            builder
+        };
         Self {
-            client: reqwest::Client::builder()
-                .timeout(Duration::from_secs(10))
+            client: builder
                 .build()
                 .expect("reqwest client builds with a fixed, valid configuration"),
         }
@@ -53,10 +62,12 @@ impl DestinationConnector for WebhookConnector {
         config: &serde_json::Value,
         payload: &serde_json::Value,
     ) -> Result<(), ConnectorError> {
-        let url = config
+        let raw_url = config
             .get("url")
             .and_then(|v| v.as_str())
             .ok_or(ConnectorError::InvalidConfig("url"))?;
+        let url = mb_net_guard::validate_outbound_url(raw_url)
+            .map_err(|e| ConnectorError::UnsafeUrl(e.to_string()))?;
 
         let response = self.client.post(url).json(payload).send().await?;
 

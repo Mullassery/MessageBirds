@@ -1009,6 +1009,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "mb-net-guard",
  "reqwest",
  "serde",
  "serde_json",
@@ -1024,6 +1025,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "mb-net-guard",
  "reqwest",
  "serde",
  "serde_json",
@@ -1163,6 +1165,16 @@ dependencies = [
  "thiserror 1.0.69",
  "tokio",
  "uuid",
+]
+
+[[package]]
+name = "mb-net-guard"
+version = "0.1.0"
+dependencies = [
+ "reqwest",
+ "thiserror 1.0.69",
+ "tokio",
+ "url",
 ]
 
 [[package]]

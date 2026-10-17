@@ -14,6 +14,7 @@ thiserror.workspace = true
 async-trait.workspace = true
 sqlx.workspace = true
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+mb-net-guard = { path = "../net-guard" }
 
 [dev-dependencies]
 tokio.workspace = true

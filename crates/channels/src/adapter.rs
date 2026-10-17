@@ -9,6 +9,8 @@ use crate::model::RenderedMessage;
 pub enum ChannelError {
     #[error("channel config is missing or has an invalid '{0}' field")]
     InvalidConfig(&'static str),
+    #[error("channel url rejected by outbound network policy: {0}")]
+    UnsafeUrl(String),
     #[error("delivery failed: {0}")]
     Delivery(#[from] reqwest::Error),
     #[error("channel responded with status {0}")]
@@ -33,9 +35,16 @@ pub struct WebhookChannelAdapter {
 
 impl WebhookChannelAdapter {
     pub fn new() -> Self {
+        let builder = reqwest::Client::builder().timeout(Duration::from_secs(10));
+        // Tenant-configured URLs are untrusted; refuse private/loopback/
+        // link-local targets unless explicitly opted out.
+        let builder = if mb_net_guard::guard_enabled() {
+            mb_net_guard::harden_client(builder)
+        } else {
+            builder
+        };
         Self {
-            client: reqwest::Client::builder()
-                .timeout(Duration::from_secs(10))
+            client: builder
                 .build()
                 .expect("reqwest client builds with a fixed, valid configuration"),
         }
@@ -55,10 +64,12 @@ impl ChannelAdapter for WebhookChannelAdapter {
         config: &serde_json::Value,
         message: &RenderedMessage,
     ) -> Result<(), ChannelError> {
-        let url = config
+        let raw_url = config
             .get("url")
             .and_then(|v| v.as_str())
             .ok_or(ChannelError::InvalidConfig("url"))?;
+        let url = mb_net_guard::validate_outbound_url(raw_url)
+            .map_err(|e| ChannelError::UnsafeUrl(e.to_string()))?;
 
         let response = self.client.post(url).json(message).send().await?;
 

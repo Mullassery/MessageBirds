@@ -72,8 +72,28 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let app = routes::router(state);
-    let listener = tokio::net::TcpListener::bind(("0.0.0.0", port)).await?;
-    tracing::info!("api listening on :{port}");
+
+    // Secure by default: bind to loopback only. The API enforces no
+    // authentication, so exposing it on a routable interface hands every
+    // tenant's data to anyone who can reach the port. Operators who really
+    // need that (e.g. behind an authenticating proxy or in a trusted
+    // network) must opt in explicitly.
+    let allow_non_loopback = std::env::var("MESSAGEBIRDS_ALLOW_NON_LOOPBACK")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false);
+    let bind_host = if allow_non_loopback {
+        "0.0.0.0"
+    } else {
+        "127.0.0.1"
+    };
+    let listener = tokio::net::TcpListener::bind((bind_host, port)).await?;
+    tracing::info!("api listening on {bind_host}:{port}");
+    if !allow_non_loopback {
+        tracing::warn!(
+            "API is bound to loopback only and enforces no auth; \
+             set MESSAGEBIRDS_ALLOW_NON_LOOPBACK=1 to expose it"
+        );
+    }
     axum::serve(listener, app).await?;
 
     Ok(())

@@ -1,4 +1,4 @@
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::Json;
 use chrono::{DateTime, Utc};
@@ -8,6 +8,7 @@ use serde_json::json;
 use uuid::Uuid;
 
 use crate::error::ApiError;
+use crate::routes::audiences::TenantQuery;
 use crate::state::AppState;
 
 /// Publishes to Kafka and returns immediately. Deep schema/mixin
@@ -48,19 +49,23 @@ pub struct EventDetail {
 }
 
 /// Single-event lookup — used by the field lineage view to show the
-/// source event behind a profile field's winning value.
+/// source event behind a profile field's winning value. Scoped by
+/// `tenant_id` (like every other read-by-id route) so an event id from one
+/// tenant can never be read by another.
 pub async fn get_event(
     State(state): State<AppState>,
+    Query(q): Query<TenantQuery>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<EventDetail>, ApiError> {
     let row = sqlx::query_as::<_, EventDetail>(
         r#"
         SELECT id, tenant_id, event_type, schema_name, schema_version, identity, context, data, profile_id, received_at, occurred_at
         FROM events
-        WHERE id = $1
+        WHERE id = $1 AND tenant_id = $2
         "#,
     )
     .bind(id)
+    .bind(q.tenant_id)
     .fetch_optional(&state.pool)
     .await?
     .ok_or_else(|| ApiError::NotFound(format!("event {id} not found")))?;
