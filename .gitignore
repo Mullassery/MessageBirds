@@ -15,4 +15,4 @@ __pycache__/
 .build/
 .wrangler/
 
-graphify-out/
+codeatlas-out/
