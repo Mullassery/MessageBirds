@@ -8,7 +8,7 @@ An open-source, event-driven Customer Data & Engagement Platform (CDP) built in 
 
 ## What it is
 
-MessageBirds is a self-hosted CDP and engagement platform that implements the full collection-to-activation pipeline: `POST /events` → schema validation → mixin composition → identity resolution → merge policy → profile projection → real-time audience evaluation → governed activation (webhooks and bulk sync) → durable journeys with templated sends. It runs on Postgres + Kafka (Redpanda) with no external accounts, ships client SDKs for web, iOS, Android, JS, and Python, and provides a Next.js viewer UI. The pipeline is real, wired, and integration-tested end to end — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for precisely what is built vs. deferred at each layer.
+MessageBirds is a self-hosted CDP and engagement platform that implements the full collection-to-activation pipeline: `POST /events` → schema validation → mixin composition → identity resolution → merge policy → profile projection → real-time audience evaluation → governed activation (webhook, HubSpot, Klaviyo, and bulk sync) → durable journeys with templated sends. It runs on Postgres + Kafka (Redpanda) with no external accounts, ships client SDKs for web, iOS, Android, JS, and Python, and provides a Next.js viewer UI. The pipeline is real, wired, and integration-tested end to end — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for precisely what is built vs. deferred at each layer.
 
 ## Features / Highlights
 
@@ -18,7 +18,8 @@ MessageBirds is a self-hosted CDP and engagement platform that implements the fu
 - **Durable journeys** — a flat-node-graph engine (Wait/Condition/Action/Split/End) with Postgres-backed durable run state and a poller that resumes runs across a restart; templated webhook sends.
 - **Parity-with-OSS speed** — live ingestion measured at ~156 events/sec (sequential, single connection) on the reference machine; zero external accounts to stand up.
 - **Client SDKs** — `@messagebirds/web` (queued, retrying, `sendBeacon` flush), `sdk/ios` (Swift, build-verified), `sdk/js` and `sdk/python` (same core scope), `sdk/android` (written, not yet build-verified), plus a Cloudflare Workers edge ingestion gateway for CORS.
-- **Bulk activation** — a second destination kind alongside webhook via [PyReverseETL](https://github.com/Mullassery/PyReverseETL)'s real sync engine.
+- **Destination connectors** — webhook, HubSpot contacts (batch upsert by email), and Klaviyo profile import, all behind the same governance/consent gate.
+- **Bulk activation** — a fourth destination kind alongside webhook/HubSpot/Klaviyo via [PyReverseETL](https://github.com/Mullassery/PyReverseETL)'s real sync engine.
 
 ## Who it's for / Use cases
 
@@ -28,7 +29,7 @@ MessageBirds is a self-hosted CDP and engagement platform that implements the fu
 
 ## What it is not
 
-- **Not a large connector library.** Exactly one real destination connector ships today (webhook) plus the bulk-sync path via PyReverseETL. There is no pre-built catalog of dozens of destinations.
+- **Not a large connector library.** Three real per-profile destination connectors ship today (webhook, HubSpot contacts, Klaviyo profiles) plus the bulk-sync path via PyReverseETL. There is no pre-built catalog of dozens of destinations.
 - **Not a decisioning/AI stack.** Decisioning, AI agents, and a CLI are not implemented.
 - **No sequence conditions in audiences** (e.g. `A then B then not C`) — that's a genuinely different, ordered evaluation model and is not built.
 - **Not hardened at scale.** It has not run production at scale or been independently security-reviewed — RudderStack's years of production hardening are a real, acknowledged gap. You must set `MB_IDENTITY_HASH_PEPPER` before pointing it at real PII (see SECURITY.md).
@@ -36,7 +37,7 @@ MessageBirds is a self-hosted CDP and engagement platform that implements the fu
 
 ## Project status
 
-`v0.1.0` (Rust workspace) / `messagebirds` 0.1.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
+`v0.2.0` (Rust workspace) / `messagebirds` 0.2.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
 
 ## Installation
 
@@ -97,6 +98,21 @@ POST /events → schema validation → mixin composition → identity resolution
 - **Manage:** `GET/POST /schemas`, `mixins`, `namespaces`, merge policies, audiences, templates, channels, journeys, and governed `POST /audiences/{id}/activate`.
 - **SDKs:** `sdk/js` and `sdk/python` expose the send-event/read-profile loop plus typed response shapes; `sdk/web` is the browser collection SDK.
 - The `ui/` Next.js viewer uses Server Components/Actions only — no client-side calls to `mb-api`, so no CORS layer is needed.
+
+## Destination kinds
+
+`POST /destinations` accepts `kind` = `webhook`, `hubspot`, `klaviyo`, or
+`pyreverseetl` (bulk). HubSpot and Klaviyo require an email on the profile and
+fail closed when it is missing.
+
+```json
+{"kind": "hubspot", "config": {"access_token": "pat-..."}}
+{"kind": "klaviyo", "config": {"api_key": "pk_...", "revision": "2024-10-15"}}
+```
+
+`base_url` is optional for both (defaults: `https://api.hubapi.com`,
+`https://a.klaviyo.com`). All outbound URLs go through the same SSRF guard as
+webhooks.
 
 ## Documentation
 

@@ -12,7 +12,7 @@ relevant source (not by re-reading old docs). Commands and results are in the se
 ## Status, in four buckets
 
 ### 1. Shipped and verified by me, this pass
-- `crates/*` (Rust workspace, 17 crates) — `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`: all clean, 55 tests passed (52 baseline + 3 added with the identity-hash pepper fix, see Security #4), 0 failed. `cargo audit`: 0 vulnerabilities, 0 warnings (see Security #1/#2 — both real findings fixed 2026-09-22). No integration tests requiring a live Postgres/Kafka exist — everything that ran is a unit test.
+- `crates/*` (Rust workspace, 17 crates) — `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`: all clean, 64 tests passed (55 baseline + 9 connector/profile tests), 0 failed. `cargo audit`: 0 vulnerabilities, 0 warnings (see Security #1/#2 — both real findings fixed 2026-09-22). No integration tests requiring a live Postgres/Kafka exist — everything that ran is a unit test.
 - `sdk/js` — `tsc` build clean.
 - `sdk/web` — `tsc --noEmit` clean, `vitest run`: 5/5 tests passed.
 - `edge/ingest-gateway` — `tsc --noEmit` clean, `vitest run`: 8/8 tests passed.
@@ -26,7 +26,7 @@ relevant source (not by re-reading old docs). Commands and results are in the se
 - PyReverseETL bulk activation path — works against the real PyReverseETL CLI, but skips field-level label policy (only consent is checked on that path).
 
 ### 3. Not built — no code exists (from `docs/ARCHITECTURE.md`'s "explicitly NOT built" list, spot-checked, still accurate)
-Decisioning, AI agents/model-provider abstraction, a CLI, multi-tenancy enforcement (RBAC/SSO/tenant isolation), real SMS/email/push channels, connectors beyond one webhook, sequence audience conditions, statistical experimentation, visual journey canvas, data retention/delete-and-forget workflows, most of the standard mixin library (only identity/person/contact/device are seeded).
+Decisioning, AI agents/model-provider abstraction, a CLI, multi-tenancy enforcement (RBAC/SSO/tenant isolation), real SMS/email/push channels, connectors beyond webhook/HubSpot/Klaviyo, sequence audience conditions, statistical experimentation, visual journey canvas, data retention/delete-and-forget workflows, most of the standard mixin library (only identity/person/contact/device are seeded).
 
 ### 4. Explicitly out of scope for this project's current milestone
 Enterprise deployment topology (Kafka cluster, Flink, Temporal, ClickHouse, object storage, Kubernetes) — `docker-compose.yml` (Postgres + Redpanda) is the only deployment target and that's a deliberate, stated choice, not a gap.

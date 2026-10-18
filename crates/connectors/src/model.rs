@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 pub const WEBHOOK_KIND: &str = "webhook";
+pub const HUBSPOT_KIND: &str = "hubspot";
+pub const KLAVIYO_KIND: &str = "klaviyo";
 
 /// A bulk-sync destination, activated through
 /// `POST /audiences/{id}/activate-via-reverse-etl` rather than the

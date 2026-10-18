@@ -8,7 +8,7 @@ use uuid::Uuid;
 use mb_audiences::AudienceRepo;
 use mb_connectors::{
     ActivationRepo, ActivationStatus, Destination, DestinationConnector, DestinationRepo,
-    ExportRow, PyReverseEtlExportRepo, PYREVERSEETL_KIND, WEBHOOK_KIND,
+    ExportRow, PyReverseEtlExportRepo, HUBSPOT_KIND, KLAVIYO_KIND, PYREVERSEETL_KIND, WEBHOOK_KIND,
 };
 use mb_governance::{consent_purpose_for_action, ConsentRepo, PolicyRepo, Reason};
 use mb_profile::ProfileRepo;
@@ -32,9 +32,12 @@ pub async fn create_destination(
     State(state): State<AppState>,
     Json(req): Json<CreateDestinationRequest>,
 ) -> Result<(StatusCode, Json<Destination>), ApiError> {
-    if req.kind != WEBHOOK_KIND && req.kind != PYREVERSEETL_KIND {
+    if !matches!(
+        req.kind.as_str(),
+        WEBHOOK_KIND | PYREVERSEETL_KIND | HUBSPOT_KIND | KLAVIYO_KIND
+    ) {
         return Err(ApiError::BadRequest(format!(
-            "unsupported destination kind '{}' — only '{WEBHOOK_KIND}' and '{PYREVERSEETL_KIND}' are implemented",
+            "unsupported destination kind '{}' — implemented: '{WEBHOOK_KIND}', '{PYREVERSEETL_KIND}', '{HUBSPOT_KIND}', '{KLAVIYO_KIND}'",
             req.kind
         )));
     }
@@ -95,12 +98,17 @@ pub async fn activate_audience(
         .get(req.tenant_id, req.destination_id)
         .await?;
 
-    if destination.kind != WEBHOOK_KIND {
-        return Err(ApiError::BadRequest(format!(
-            "destination kind '{}' has no connector implementation",
-            destination.kind
-        )));
-    }
+    let connector: &dyn DestinationConnector = match destination.kind.as_str() {
+        WEBHOOK_KIND => state.webhook.as_ref(),
+        HUBSPOT_KIND => state.hubspot.as_ref(),
+        KLAVIYO_KIND => state.klaviyo.as_ref(),
+        _ => {
+            return Err(ApiError::BadRequest(format!(
+                "destination kind '{}' has no connector implementation",
+                destination.kind
+            )));
+        }
+    };
 
     let members = state.audiences.get_members(audience_id).await?;
     let consent_purpose = consent_purpose_for_action(&req.action);
@@ -174,7 +182,7 @@ pub async fn activate_audience(
             "mixins": profile.mixins,
         });
 
-        let result = state.webhook.send(&destination.config, &payload).await;
+        let result = connector.send(&destination.config, &payload).await;
         let (status, detail) = match &result {
             Ok(()) => {
                 sent += 1;

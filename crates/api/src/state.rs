@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use mb_audiences::PgAudienceRepo;
 use mb_channels::PgChannelRepo;
-use mb_connectors::{PgConnectorRepo, WebhookConnector};
+use mb_connectors::{HubspotConnector, KlaviyoConnector, PgConnectorRepo, WebhookConnector};
 use mb_events::EventProducer;
 use mb_governance::PgGovernanceRepo;
 use mb_identity::PgIdentityRepo;
@@ -32,6 +32,8 @@ pub struct AppState {
     /// `connectors` above.
     pub governance: Arc<PgGovernanceRepo>,
     pub webhook: Arc<WebhookConnector>,
+    pub hubspot: Arc<HubspotConnector>,
+    pub klaviyo: Arc<KlaviyoConnector>,
     pub channels: Arc<PgChannelRepo>,
     pub templates: Arc<PgTemplateRepo>,
     /// Implements both `JourneyRepo` and `ContactPolicyRepo`.

@@ -7,6 +7,8 @@ use thiserror::Error;
 pub enum ConnectorError {
     #[error("destination config is missing or has an invalid '{0}' field")]
     InvalidConfig(&'static str),
+    #[error("destination payload is missing required field '{0}'")]
+    InvalidPayload(&'static str),
     #[error("destination url rejected by outbound network policy: {0}")]
     UnsafeUrl(String),
     #[error("delivery failed: {0}")]

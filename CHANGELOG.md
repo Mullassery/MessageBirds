@@ -7,15 +7,20 @@ backfilled here beyond what's independently verifiable from `git log` and `docs/
 see those for the detailed phase-by-phase narrative; this file is intentionally a summary, not a
 duplicate.
 
-## [Unreleased]
+## [0.2.0] - 2026-10-19
 
 ### Added
+- Real HubSpot and Klaviyo destination connectors behind the existing
+  governance/consent gate. HubSpot uses contacts batch-upsert by email;
+  Klaviyo uses the profile-import endpoint with a configurable API revision.
+  Both require an email and fail closed when it is missing; `base_url` is
+  overridable and all outbound URLs use the same SSRF guard as webhooks.
 - Core event platform: schema registry, mixin composition, identity resolution, merge policies,
   profile projection (`crates/core`, `crates/namespaces`, `crates/schema-registry`,
   `crates/mixins`, `crates/identity`, `crates/merge-policy`, `crates/profile`, `crates/events`).
 - Confidence-scored merge suggestions, explicit profile merge/split, profile timeline UI.
-- Audiences (rule-based, real-time streaming membership), one webhook destination connector, a
-  data quality dashboard, field lineage view.
+- Audiences (rule-based, real-time streaming membership), webhook destination connector
+  (HubSpot/Klaviyo added above), a data quality dashboard, field lineage view.
 - Governance: field labels, a deny-list policy engine, an append-only consent ledger, governed
   per-profile activation, a policy simulator.
 - Engagement: versioned message templates, a real webhook channel transport, Postgres-backed

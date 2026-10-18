@@ -117,7 +117,7 @@ This is deliberate, not an oversight — the product spec's own guidance is to g
 
 - **Sequence audience conditions** (`A THEN B THEN NOT C`) — attribute/event/AND/OR/NOT are done (Phase 3); ordered time-aware chains are a different evaluation model
 - **Streaming membership as Kafka events** — membership changes land in Postgres only, not republished as `customer.entered_audience`/`customer.exited_audience` events
-- **Connectors beyond one webhook destination** — no Salesforce, Braze, Shopify, GA4, Snowflake, BigQuery, ad platforms, or any source connector beyond the HTTP API
+- **Connectors beyond webhook/HubSpot/Klaviyo** — no Salesforce, Braze, Shopify, GA4, Snowflake, BigQuery, ad platforms, or any source connector beyond the HTTP API
 - **Schema field labels aren't enforced** — only mixin field labels feed policy evaluation; a schema's own `labels` are stored, not acted on
 - **Policy engine has no exceptions, inheritance, or versioning** — a flat `(label, action, effect, priority)` deny-list only
 - **Consent purpose mapping is fixed code**, not tenant-configurable, and there's no jurisdiction-aware consent logic beyond storing the field
@@ -144,7 +144,7 @@ Phases as described in the product spec, in order:
 
 1. **Core event platform** — done
 2. **Identity** — done: deterministic matching, confidence-scored merge suggestions, explicit merge/split, profile timeline UI. Not done: automatic probabilistic resolution (by design — see above), full lineage (every observation, not just the winner)
-3. **CDP** — done: rule-based audiences with real-time streaming membership, a data quality dashboard, field lineage, one webhook destination connector. Not done: sequence conditions, membership-as-Kafka-events, any connector beyond webhook, batch/scheduled segmentation
+3. **CDP** — done: rule-based audiences with real-time streaming membership, a data quality dashboard, field lineage, webhook, HubSpot, and Klaviyo destination connectors. Not done: sequence conditions, membership-as-Kafka-events, connectors beyond webhook/HubSpot/Klaviyo, batch/scheduled segmentation
 4. **Governance** — done: labels, marketing actions, a deny-list policy engine, append-only consent, governed per-profile activation, a policy simulator matching real activation behavior. Not done: exceptions/inheritance/policy versioning, schema-field-label enforcement, tenant-configurable consent purposes
 5. **Engagement** — done: message templates (versioned, journey-pinned), one real channel transport (webhook), journeys as a flat node graph (Wait/Condition/Action/Split/End), Postgres-backed durable orchestration (verified across a worker restart mid-wait), contact-policy suppression. Not done: real SMS/email/push adapters, statistical experimentation, visual canvas, multi-replica journey-worker fault tolerance, `Event` triggers
    - Also since Phase 5: client SDKs (`sdk/web`, `sdk/ios` verified; `sdk/android` written, unverified), an edge ingestion gateway (built, not deployed), and bulk activation through PyReverseETL — deepening COLLECT and ACT, not the spec's own numbered Phase 6 below

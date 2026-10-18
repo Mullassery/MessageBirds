@@ -9,7 +9,7 @@ use sqlx::postgres::PgPoolOptions;
 
 use mb_audiences::PgAudienceRepo;
 use mb_channels::{PgChannelRepo, WebhookChannelAdapter};
-use mb_connectors::{PgConnectorRepo, WebhookConnector};
+use mb_connectors::{HubspotConnector, KlaviyoConnector, PgConnectorRepo, WebhookConnector};
 use mb_events::EventProducer;
 use mb_governance::PgGovernanceRepo;
 use mb_identity::PgIdentityRepo;
@@ -57,6 +57,8 @@ async fn main() -> anyhow::Result<()> {
         connectors: Arc::new(PgConnectorRepo::new(pool.clone())),
         governance: Arc::new(PgGovernanceRepo::new(pool.clone())),
         webhook: Arc::new(WebhookConnector::new()),
+        hubspot: Arc::new(HubspotConnector::new()),
+        klaviyo: Arc::new(KlaviyoConnector::new()),
         channels: Arc::new(PgChannelRepo::new(pool.clone())),
         templates: Arc::new(PgTemplateRepo::new(pool.clone())),
         journeys: Arc::new(PgJourneyRepo::new(

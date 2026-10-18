@@ -4,12 +4,18 @@
 //! Section 60 requires, even without the governance/consent checks that
 //! would normally gate it (those aren't implemented yet).
 
+mod hubspot;
+mod klaviyo;
 mod model;
+mod profile;
 mod repo;
 mod webhook;
 
+pub use hubspot::HubspotConnector;
+pub use klaviyo::KlaviyoConnector;
 pub use model::{
-    ActivationRecord, ActivationStatus, Destination, ExportRow, PYREVERSEETL_KIND, WEBHOOK_KIND,
+    ActivationRecord, ActivationStatus, Destination, ExportRow, HUBSPOT_KIND, KLAVIYO_KIND,
+    PYREVERSEETL_KIND, WEBHOOK_KIND,
 };
 pub use repo::{
     ActivationRepo, ConnectorRepoError, DestinationRepo, PgConnectorRepo, PyReverseEtlExportRepo,
