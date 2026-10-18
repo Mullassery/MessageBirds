@@ -64,7 +64,8 @@ Implemented the first destination-breadth step in this pass:
 - `cargo test --workspace`: 64 passed, 0 failed; fmt/clippy clean.
 
 Added optional single-key API authentication (`MESSAGEBIRDS_API_KEY`,
-`Authorization: Bearer`, health exempt, constant-time compare). Tenant
-isolation/RBAC is still open: handlers still trust the request `tenant_id`.
+`Authorization: Bearer`, health exempt, constant-time compare) plus optional
+tenant binding (`MESSAGEBIRDS_API_KEY_TENANT`) that rejects mismatched
+`tenant_id` query/body values. Full per-tenant keys/RBAC/SSO remain open.
 Also still open: Salesforce/Braze/ad-platform connectors and live vendor
 verification.

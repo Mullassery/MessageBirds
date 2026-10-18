@@ -92,13 +92,14 @@ actionlint .github/workflows/ci.yml                             # clean
    for the first time on a deployment with existing identity data is a breaking change (a
    re-hash migration, not implemented here, would be needed). Tests added in
    `crates/identity/src/hash.rs`.
-5. **Tenant isolation is still missing; an optional API-key gate now exists.**
-   Set `MESSAGEBIRDS_API_KEY` to require `Authorization: Bearer <key>` on every
-   route except `/healthz` (constant-time comparison). This is a single-key
-   gate, not RBAC/SSO: `tenant_id` is still a request field, so a key holder can
-   read or write another tenant by changing that UUID. Tenant isolation remains
-   the top priority before pointing a real SDK at a real deployment. When the
-   env var is unset, behaviour is unchanged for local development.
+5. **Single-key API auth + optional tenant binding; not full RBAC.**
+   `MESSAGEBIRDS_API_KEY` requires `Authorization: Bearer <key>` on every route
+   except `/healthz` (constant-time comparison). Setting
+   `MESSAGEBIRDS_API_KEY_TENANT` binds that key to one tenant and rejects
+   mismatched `tenant_id` query/body values (403). There are still no
+   per-tenant keys, login/session, roles, or SSO; a key without the tenant
+   binding is not tenant-scoped. When the env vars are unset, behaviour is
+   unchanged for local development.
 6. **`edge/ingest-gateway` has no write-key/API-key check.** Confirmed by reading `edge/ingest-gateway/src/`: it validates CORS and envelope shape only, then forwards straight to `mb-api`. Combined with finding 5, there is currently no credential anywhere in the request path from a browser to Postgres. Already disclosed in `docs/ARCHITECTURE.md`; also not deployed (`wrangler deploy` has never been run), which limits current exposure to zero in practice.
 7. **No SQL injection found.** I audited every `sqlx::query_as(&format!(...))` call (33 call sites across `crates/audiences`, `crates/channels`, `crates/governance`, `crates/journeys`, `crates/templates` — e.g. `crates/audiences/src/repo.rs:91-97`) because dynamic query-string construction is the classic injection smell. In every case the `format!` interpolates only a compile-time `const` column list (e.g. `AUDIENCE_COLUMNS` at `crates/audiences/src/repo.rs:71`); every actual value is passed through `.bind()` with numbered placeholders. This pattern is safe as used, just worth someone re-checking if a new call site copies the pattern carelessly.
 8. **No secrets found committed.** Searched for API keys, passwords, tokens, private keys, `.env` files, and credential-shaped files across the tree (excluding `node_modules`/`target`/`.build`). The only credential-shaped string is the local dev Postgres password (`messagebirds`/`messagebirds`) in `docker-compose.yml`, which matches the `DATABASE_URL` already printed in `README.md`'s own quick-start — a conventional, low-stakes local-dev-only credential, not a leaked production secret.

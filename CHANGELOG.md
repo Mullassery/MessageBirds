@@ -7,6 +7,14 @@ backfilled here beyond what's independently verifiable from `git log` and `docs/
 see those for the detailed phase-by-phase narrative; this file is intentionally a summary, not a
 duplicate.
 
+## [0.4.0] - 2026-10-19
+
+### Added
+- Optional tenant binding for the API key: `MESSAGEBIRDS_API_KEY_TENANT`
+  restricts requests to that tenant by rejecting a mismatched `tenant_id` in
+  the query string or JSON body (403). This is still a single-key gate, not
+  per-tenant keys/RBAC.
+
 ## [0.3.0] - 2026-10-19
 
 ### Added
