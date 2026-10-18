@@ -7,6 +7,15 @@ backfilled here beyond what's independently verifiable from `git log` and `docs/
 see those for the detailed phase-by-phase narrative; this file is intentionally a summary, not a
 duplicate.
 
+## [0.5.0] - 2026-10-19
+
+### Added
+- Multi-key API authentication via `MESSAGEBIRDS_API_KEYS`
+  (`{"key": "tenant-uuid"}`). Each key resolves to its own tenant and mismatched
+  `tenant_id` query/body values are rejected. The single-key
+  `MESSAGEBIRDS_API_KEY`/`_TENANT` pair remains supported. Still no
+  roles/SSO.
+
 ## [0.4.0] - 2026-10-19
 
 ### Added

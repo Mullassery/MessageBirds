@@ -37,7 +37,7 @@ MessageBirds is a self-hosted CDP and engagement platform that implements the fu
 
 ## Project status
 
-`v0.4.0` (Rust workspace) / `messagebirds` 0.4.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
+`v0.5.0` (Rust workspace) / `messagebirds` 0.5.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
 
 ## Installation
 
@@ -60,11 +60,12 @@ npm run smoke-test --workspace=sdk/js
 npm run dev --workspace=ui                   # http://localhost:3000
 ```
 
-Set `MESSAGEBIRDS_API_KEY` to require `Authorization: Bearer <key>` on every
-route except `/healthz`. Set `MESSAGEBIRDS_API_KEY_TENANT` to a tenant UUID to
-bind that key to one tenant; requests whose `tenant_id` query/body field does
-not match are rejected with `403`. This is a single-key gate, not per-tenant
-keys/RBAC; leave it unset for local development.
+Set `MESSAGEBIRDS_API_KEYS` to a JSON object mapping keys to tenant UUIDs
+(`{"key-a":"<uuid>","key-b":"<uuid>"}`) to require `Authorization: Bearer <key>`
+on every route except `/healthz`. Each key is bound to its tenant, and requests
+whose `tenant_id` query/body field does not match are rejected with `403`.
+The older single-key `MESSAGEBIRDS_API_KEY` (+ `_TENANT`) still works. There are
+no roles/SSO yet; leave both unset for local development.
 
 Before pointing this at real PII, set `MB_IDENTITY_HASH_PEPPER` (a random per-deployment secret) on the `api`, `worker`, and `journeys-worker` processes — it is mixed into the identity-matching hash in `crates/identity/src/hash.rs`. Leaving it unset reproduces the old unsalted behavior; see `SECURITY.md`.
 

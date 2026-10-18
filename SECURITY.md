@@ -10,12 +10,11 @@ are the reason why. This is not hedging; see `ROADMAP_HONEST.md` for the full te
 This is pre-production software. The following are known, disclosed, unfixed gaps — not
 hypothetical risks:
 
-- **Single-key tenant binding, not full RBAC.** `MESSAGEBIRDS_API_KEY` requires
-  a bearer token; `MESSAGEBIRDS_API_KEY_TENANT` binds that key to one tenant and
-  rejects requests whose `tenant_id` query/body field does not match (403).
-  There are still no per-tenant keys, login/session, roles, or SSO, and
-  `tenant_id` remains a plain column. A key issued without
-  `MESSAGEBIRDS_API_KEY_TENANT` is not tenant-scoped.
+- **Per-tenant API keys, not full RBAC.** `MESSAGEBIRDS_API_KEYS` maps keys to
+  tenant UUIDs and rejects a mismatched `tenant_id` query/body value (403). The
+  older `MESSAGEBIRDS_API_KEY` + `_TENANT` pair still works. There are still no
+  login/session, roles, or SSO, and `tenant_id` remains a plain column. A key
+  configured without a tenant binding is not tenant-scoped.
 - **`edge/ingest-gateway` has no write-key/API-key check.** It validates CORS and request-body
   shape only, then forwards to `mb-api`. It has also never been deployed (no `wrangler deploy`
   has been run against a real Cloudflare account), which limits real-world exposure to zero today,
