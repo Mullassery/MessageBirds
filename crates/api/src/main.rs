@@ -1,3 +1,4 @@
+mod auth;
 mod error;
 mod labels;
 mod routes;
@@ -71,6 +72,7 @@ async fn main() -> anyhow::Result<()> {
                 channel_adapter: Arc::new(WebhookChannelAdapter::new()),
             },
         )),
+        auth: auth::ApiKeyAuth::from_env(),
     };
 
     let app = routes::router(state);

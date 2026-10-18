@@ -10,10 +10,16 @@ are the reason why. This is not hedging; see `ROADMAP_HONEST.md` for the full te
 This is pre-production software. The following are known, disclosed, unfixed gaps — not
 hypothetical risks:
 
-- **No authentication or authorization anywhere in `mb-api`.** There is no login, no API key, no
-  session, no RBAC. Any caller who can reach the HTTP port and knows (or guesses) a `tenant_id`
-  UUID can read or write that tenant's data, including PII and consent records. `tenant_id` is
-  threaded through every table as a plain column with no enforcement layer above it.
+- **No tenant isolation yet.** An optional single-key API gate exists
+  (`MESSAGEBIRDS_API_KEY` -> `Authorization: Bearer ...`), but handlers still
+  trust the `tenant_id` in the request. A caller with the key can still read or
+  write another tenant by changing that UUID. Do not treat the key as RBAC or
+  multi-tenant isolation. Historically there was no authentication at all; the
+  key gate closes that first gap only. There is still no login/session/RBAC, and
+  `tenant_id` is threaded through every table as a plain column with no
+  enforcement layer above it. Any caller with the key who knows (or guesses) a
+  `tenant_id` UUID can read or write that tenant's data, including PII and
+  consent records.
 - **`edge/ingest-gateway` has no write-key/API-key check.** It validates CORS and request-body
   shape only, then forwards to `mb-api`. It has also never been deployed (no `wrangler deploy`
   has been run against a real Cloudflare account), which limits real-world exposure to zero today,

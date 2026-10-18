@@ -63,5 +63,8 @@ Implemented the first destination-breadth step in this pass:
 - API accepts the new kinds and dispatches per destination kind.
 - `cargo test --workspace`: 64 passed, 0 failed; fmt/clippy clean.
 
-Still open: auth/tenant isolation, Salesforce/Braze/ad-platform connectors,
-live vendor verification.
+Added optional single-key API authentication (`MESSAGEBIRDS_API_KEY`,
+`Authorization: Bearer`, health exempt, constant-time compare). Tenant
+isolation/RBAC is still open: handlers still trust the request `tenant_id`.
+Also still open: Salesforce/Braze/ad-platform connectors and live vendor
+verification.

@@ -7,6 +7,14 @@ backfilled here beyond what's independently verifiable from `git log` and `docs/
 see those for the detailed phase-by-phase narrative; this file is intentionally a summary, not a
 duplicate.
 
+## [0.3.0] - 2026-10-19
+
+### Added
+- Optional single-key API authentication: set `MESSAGEBIRDS_API_KEY` and every
+  route except `/healthz` requires `Authorization: Bearer <key>` (constant-time
+  comparison). Unset keeps the previous local-dev behaviour. This is not tenant
+  isolation/RBAC; handlers still trust the request's `tenant_id`.
+
 ## [0.2.0] - 2026-10-19
 
 ### Added

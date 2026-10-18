@@ -14,6 +14,8 @@ use mb_profile::PgProfileRepo;
 use mb_schema_registry::PgSchemaRepo;
 use mb_templates::PgTemplateRepo;
 
+use crate::auth::ApiKeyAuth;
+
 #[derive(Clone)]
 pub struct AppState {
     pub pool: PgPool,
@@ -38,4 +40,6 @@ pub struct AppState {
     pub templates: Arc<PgTemplateRepo>,
     /// Implements both `JourneyRepo` and `ContactPolicyRepo`.
     pub journeys: Arc<PgJourneyRepo>,
+    /// Optional single-key API gate. Disabled when `MESSAGEBIRDS_API_KEY` is unset.
+    pub auth: ApiKeyAuth,
 }

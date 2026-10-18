@@ -12,9 +12,11 @@ mod profiles;
 mod schemas;
 mod templates;
 
+use axum::middleware;
 use axum::routing::{get, post};
 use axum::Router;
 
+use crate::auth;
 use crate::state::AppState;
 
 pub fn router(state: AppState) -> Router {
@@ -112,5 +114,9 @@ pub fn router(state: AppState) -> Router {
             "/contact-policies",
             get(journeys::list_contact_policies).post(journeys::create_contact_policy),
         )
+        .layer(middleware::from_fn_with_state(
+            state.auth.clone(),
+            auth::require,
+        ))
         .with_state(state)
 }

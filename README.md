@@ -37,7 +37,7 @@ MessageBirds is a self-hosted CDP and engagement platform that implements the fu
 
 ## Project status
 
-`v0.2.0` (Rust workspace) / `messagebirds` 0.2.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
+`v0.3.0` (Rust workspace) / `messagebirds` 0.3.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
 
 ## Installation
 
@@ -59,6 +59,10 @@ npm run smoke-test --workspace=sdk/js
 # 4. Browse it
 npm run dev --workspace=ui                   # http://localhost:3000
 ```
+
+Set `MESSAGEBIRDS_API_KEY` to require `Authorization: Bearer <key>` on every
+route except `/healthz`. This is a single-key gate, not tenant isolation; leave
+it unset for local development.
 
 Before pointing this at real PII, set `MB_IDENTITY_HASH_PEPPER` (a random per-deployment secret) on the `api`, `worker`, and `journeys-worker` processes — it is mixed into the identity-matching hash in `crates/identity/src/hash.rs`. Leaving it unset reproduces the old unsalted behavior; see `SECURITY.md`.
 
