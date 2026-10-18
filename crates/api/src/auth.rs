@@ -1,10 +1,12 @@
-//! Optional API-key authentication.
+//! Optional API-key authentication and coarse roles.
 //!
-//! Set `MESSAGEBIRDS_API_KEYS` (JSON: `{"key": "tenant-uuid"}`) or the
-//! single-key `MESSAGEBIRDS_API_KEY` (+ optional `_TENANT`) to require
+//! Set `MESSAGEBIRDS_API_KEYS` (JSON: `{"key": "tenant-uuid"}` or
+//! `{"key": {"tenant_id": "uuid", "role": "read_only"}}`) or the single-key
+//! `MESSAGEBIRDS_API_KEY` (+ optional `_TENANT`) to require
 //! `Authorization: Bearer <key>` on every route except `/healthz`. Keys can be
 //! bound to a tenant, and requests with a different `tenant_id` are rejected.
-//! This is API-key authentication, not RBAC/SSO; handlers still take
+//! `read_only` keys may only use GET/HEAD/OPTIONS. This is API-key auth plus a
+//! coarse write gate, not SSO or a full role system; handlers still take
 //! `tenant_id` from the request. When no keys are configured, behaviour is
 //! unchanged (local dev).
 
@@ -12,17 +14,28 @@ use std::collections::HashMap;
 
 use axum::body::{to_bytes, Body};
 use axum::extract::State;
-use axum::http::{Request, StatusCode, Uri};
+use axum::http::{Method, Request, StatusCode, Uri};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde_json::json;
 use uuid::Uuid;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Role {
+    Admin,
+    ReadOnly,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct KeyPolicy {
+    pub tenant: Option<Uuid>,
+    pub role: Role,
+}
+
 #[derive(Clone, Default)]
 pub struct ApiKeyAuth {
-    /// API key -> optional tenant binding.
-    keys: HashMap<String, Option<Uuid>>,
+    keys: HashMap<String, KeyPolicy>,
 }
 
 impl ApiKeyAuth {
@@ -37,7 +50,10 @@ impl ApiKeyAuth {
             if !key.is_empty() {
                 keys.insert(
                     key,
-                    tenant_id.and_then(|value| Uuid::parse_str(value.trim()).ok()),
+                    KeyPolicy {
+                        tenant: tenant_id.and_then(|value| Uuid::parse_str(value.trim()).ok()),
+                        role: Role::Admin,
+                    },
                 );
             }
         }
@@ -46,18 +62,7 @@ impl ApiKeyAuth {
 
     pub fn from_env() -> Self {
         if let Ok(raw) = std::env::var("MESSAGEBIRDS_API_KEYS") {
-            if let Ok(map) = serde_json::from_str::<HashMap<String, String>>(&raw) {
-                let keys = map
-                    .into_iter()
-                    .filter_map(|(key, tenant)| {
-                        let key = key.trim().to_string();
-                        if key.is_empty() {
-                            return None;
-                        }
-                        let tenant = Uuid::parse_str(tenant.trim()).ok();
-                        Some((key, tenant))
-                    })
-                    .collect();
+            if let Some(keys) = parse_keys(&raw) {
                 return Self { keys };
             }
         }
@@ -71,22 +76,56 @@ impl ApiKeyAuth {
         !self.keys.is_empty()
     }
 
-    /// `None` = no keys configured (auth disabled), `Some(tenant)` = valid key
-    /// with an optional tenant binding.
-    pub fn resolve(&self, header: Option<&str>) -> Option<Option<Uuid>> {
+    /// `None` = no keys configured (auth disabled), `Some(policy)` = valid key.
+    pub fn resolve(&self, header: Option<&str>) -> Option<KeyPolicy> {
         if !self.enabled() {
-            return Some(None);
+            return Some(KeyPolicy {
+                tenant: None,
+                role: Role::Admin,
+            });
         }
         let header = header?;
         let provided = header.strip_prefix("Bearer ")?.trim();
         let mut found = None;
-        for (key, tenant) in &self.keys {
+        for (key, policy) in &self.keys {
             if constant_time_eq(key.as_bytes(), provided.as_bytes()) {
-                found = Some(*tenant);
+                found = Some(*policy);
             }
         }
         found
     }
+}
+
+fn parse_keys(raw: &str) -> Option<HashMap<String, KeyPolicy>> {
+    let value: serde_json::Value = serde_json::from_str(raw).ok()?;
+    let object = value.as_object()?;
+    let mut keys = HashMap::new();
+    for (key, policy) in object {
+        let key = key.trim();
+        if key.is_empty() {
+            continue;
+        }
+        let parsed = match policy {
+            serde_json::Value::String(tenant) => KeyPolicy {
+                tenant: Uuid::parse_str(tenant.trim()).ok(),
+                role: Role::Admin,
+            },
+            serde_json::Value::Object(map) => {
+                let tenant = map
+                    .get("tenant_id")
+                    .and_then(|value| value.as_str())
+                    .and_then(|value| Uuid::parse_str(value.trim()).ok());
+                let role = match map.get("role").and_then(|value| value.as_str()) {
+                    Some("read_only") | Some("readonly") | Some("viewer") => Role::ReadOnly,
+                    _ => Role::Admin,
+                };
+                KeyPolicy { tenant, role }
+            }
+            _ => continue,
+        };
+        keys.insert(key.to_string(), parsed);
+    }
+    Some(keys)
 }
 
 fn constant_time_eq(left: &[u8], right: &[u8]) -> bool {
@@ -112,7 +151,7 @@ pub async fn require(
         .headers()
         .get(axum::http::header::AUTHORIZATION)
         .and_then(|value| value.to_str().ok());
-    let Some(tenant_binding) = auth.resolve(header) else {
+    let Some(policy) = auth.resolve(header) else {
         return (
             StatusCode::UNAUTHORIZED,
             Json(json!({
@@ -123,9 +162,17 @@ pub async fn require(
             .into_response();
     };
 
+    if policy.role == Role::ReadOnly && !is_read_method(request.method()) {
+        return (
+            StatusCode::FORBIDDEN,
+            Json(json!({"error": "this API key is read-only"})),
+        )
+            .into_response();
+    }
+
     // Per-key tenant binding. This prevents a key from acting across tenants,
-    // but it is not RBAC/SSO.
-    if let Some(expected) = tenant_binding {
+    // but it is not a full role/SSO system.
+    if let Some(expected) = policy.tenant {
         let (parts, body) = request.into_parts();
         let bytes = match to_bytes(body, 2 * 1024 * 1024).await {
             Ok(bytes) => bytes,
@@ -156,6 +203,10 @@ pub async fn require(
     next.run(request).await
 }
 
+fn is_read_method(method: &Method) -> bool {
+    matches!(*method, Method::GET | Method::HEAD | Method::OPTIONS)
+}
+
 fn requested_tenant(uri: &Uri, body: &[u8]) -> Option<Uuid> {
     if let Some(query) = uri.query() {
         for pair in query.split('&') {
@@ -179,22 +230,48 @@ mod tests {
     #[test]
     fn disabled_auth_allows_everything() {
         let auth = ApiKeyAuth::new(None);
-        assert_eq!(auth.resolve(None), Some(None));
+        let policy = auth.resolve(None).unwrap();
+        assert_eq!(policy.role, Role::Admin);
+        assert_eq!(policy.tenant, None);
     }
 
     #[test]
     fn enabled_auth_requires_the_exact_bearer_token() {
         let auth = ApiKeyAuth::new(Some("secret".to_string()));
-        assert_eq!(auth.resolve(Some("Bearer secret")), Some(None));
-        assert_eq!(auth.resolve(Some("Bearer wrong")), None);
-        assert_eq!(auth.resolve(Some("secret")), None);
-        assert_eq!(auth.resolve(None), None);
+        assert_eq!(
+            auth.resolve(Some("Bearer secret")).unwrap().role,
+            Role::Admin
+        );
+        assert!(auth.resolve(Some("Bearer wrong")).is_none());
+        assert!(auth.resolve(Some("secret")).is_none());
+        assert!(auth.resolve(None).is_none());
     }
 
     #[test]
     fn blank_key_is_treated_as_disabled() {
         let auth = ApiKeyAuth::new(Some("   ".to_string()));
         assert!(!auth.enabled());
+    }
+
+    #[test]
+    fn parses_string_and_object_key_policies() {
+        let tenant = Uuid::new_v4();
+        let raw = format!(
+            r#"{{"admin":"{tenant}","viewer":{{"tenant_id":"{tenant}","role":"read_only"}}}}"#
+        );
+        let keys = parse_keys(&raw).unwrap();
+        assert_eq!(keys["admin"].tenant, Some(tenant));
+        assert_eq!(keys["admin"].role, Role::Admin);
+        assert_eq!(keys["viewer"].tenant, Some(tenant));
+        assert_eq!(keys["viewer"].role, Role::ReadOnly);
+    }
+
+    #[test]
+    fn read_only_role_is_limited_to_read_methods() {
+        assert!(is_read_method(&Method::GET));
+        assert!(is_read_method(&Method::HEAD));
+        assert!(!is_read_method(&Method::POST));
+        assert!(!is_read_method(&Method::DELETE));
     }
 
     #[test]
@@ -213,12 +290,30 @@ mod tests {
         let tenant = Uuid::new_v4();
         let auth = ApiKeyAuth {
             keys: HashMap::from([
-                ("key-a".to_string(), Some(tenant)),
-                ("key-b".to_string(), None),
+                (
+                    "key-a".to_string(),
+                    KeyPolicy {
+                        tenant: Some(tenant),
+                        role: Role::Admin,
+                    },
+                ),
+                (
+                    "key-b".to_string(),
+                    KeyPolicy {
+                        tenant: None,
+                        role: Role::ReadOnly,
+                    },
+                ),
             ]),
         };
-        assert_eq!(auth.resolve(Some("Bearer key-a")), Some(Some(tenant)));
-        assert_eq!(auth.resolve(Some("Bearer key-b")), Some(None));
-        assert_eq!(auth.resolve(Some("Bearer nope")), None);
+        assert_eq!(
+            auth.resolve(Some("Bearer key-a")).unwrap().tenant,
+            Some(tenant)
+        );
+        assert_eq!(
+            auth.resolve(Some("Bearer key-b")).unwrap().role,
+            Role::ReadOnly
+        );
+        assert!(auth.resolve(Some("Bearer nope")).is_none());
     }
 }

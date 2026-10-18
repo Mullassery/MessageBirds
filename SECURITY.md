@@ -10,10 +10,11 @@ are the reason why. This is not hedging; see `ROADMAP_HONEST.md` for the full te
 This is pre-production software. The following are known, disclosed, unfixed gaps — not
 hypothetical risks:
 
-- **Per-tenant API keys, not full RBAC.** `MESSAGEBIRDS_API_KEYS` maps keys to
-  tenant UUIDs and rejects a mismatched `tenant_id` query/body value (403). The
-  older `MESSAGEBIRDS_API_KEY` + `_TENANT` pair still works. There are still no
-  login/session, roles, or SSO, and `tenant_id` remains a plain column. A key
+- **Per-tenant API keys + coarse read-only role, not full RBAC/SSO.**
+  `MESSAGEBIRDS_API_KEYS` maps keys to tenant UUIDs and optional roles
+  (`read_only` allows GET/HEAD/OPTIONS only); tenant mismatches return 403.
+  The older `MESSAGEBIRDS_API_KEY` + `_TENANT` pair is an admin key. There is
+  still no login/session or SSO, and `tenant_id` remains a plain column. A key
   configured without a tenant binding is not tenant-scoped.
 - **`edge/ingest-gateway` has no write-key/API-key check.** It validates CORS and request-body
   shape only, then forwards to `mb-api`. It has also never been deployed (no `wrangler deploy`

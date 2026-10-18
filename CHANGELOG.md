@@ -7,6 +7,14 @@ backfilled here beyond what's independently verifiable from `git log` and `docs/
 see those for the detailed phase-by-phase narrative; this file is intentionally a summary, not a
 duplicate.
 
+## [0.6.0] - 2026-10-19
+
+### Added
+- Coarse API-key roles: `MESSAGEBIRDS_API_KEYS` values may be
+  `{"tenant_id": "...", "role": "read_only"}` (or `"viewer"`). Read-only keys
+  are limited to GET/HEAD/OPTIONS; admin is the default. Still not SSO/full
+  RBAC.
+
 ## [0.5.0] - 2026-10-19
 
 ### Added
