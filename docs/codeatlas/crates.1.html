@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CodeAtlas</title>
+<script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+<script src="https://unpkg.com/cytoscape-dagre@2.4.0/cytoscape-dagre.js"></script>
+<style>
+  body { margin: 0; font-family: -apple-system, sans-serif; }
+  #cy { width: 100vw; height: 100vh; }
+  header { padding: 12px 16px; border-bottom: 1px solid #eee; }
+</style>
+</head>
+<body>
+<header>
+  <strong>CodeAtlas</strong>
+  <p>Owns 0 symbols across 0 file(s).</p>
+</header>
+<div id="cy"></div>
+<script>
+const data = {"nodes": [{"data": {"id": "api", "label": "api", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./api.html"}}, {"data": {"id": "audiences", "label": "audiences", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./audiences.html"}}, {"data": {"id": "channels", "label": "channels", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./channels.html"}}, {"data": {"id": "connectors", "label": "connectors", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./connectors.html"}}, {"data": {"id": "core", "label": "core", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./core.html"}}, {"data": {"id": "events", "label": "events", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./events.html"}}, {"data": {"id": "governance", "label": "governance", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./governance.html"}}, {"data": {"id": "identity", "label": "identity", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./identity.html"}}, {"data": {"id": "journeys", "label": "journeys", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./journeys.html"}}, {"data": {"id": "journeys_worker", "label": "journeys-worker", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./journeys_worker.html"}}, {"data": {"id": "merge_policy", "label": "merge-policy", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./merge_policy.html"}}, {"data": {"id": "mixins", "label": "mixins", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./mixins.html"}}, {"data": {"id": "namespaces", "label": "namespaces", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./namespaces.html"}}, {"data": {"id": "net_guard", "label": "net-guard", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./net_guard.html"}}, {"data": {"id": "profile", "label": "profile", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./profile.html"}}, {"data": {"id": "schema_registry", "label": "schema-registry", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./schema_registry.html"}}, {"data": {"id": "templates", "label": "templates", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./templates.html"}}, {"data": {"id": "worker", "label": "worker", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./worker.html"}}], "edges": [{"data": {"id": "edge_0", "source": "api", "target": "mixins", "label": "calls"}}, {"data": {"id": "edge_1", "source": "api", "target": "core", "label": "calls"}}, {"data": {"id": "edge_2", "source": "journeys_worker", "target": "core", "label": "calls"}}, {"data": {"id": "edge_3", "source": "journeys_worker", "target": "journeys", "label": "calls"}}, {"data": {"id": "edge_4", "source": "mixins", "target": "schema_registry", "label": "calls"}}, {"data": {"id": "edge_5", "source": "net_guard", "target": "core", "label": "calls"}}, {"data": {"id": "edge_6", "source": "profile", "target": "merge_policy", "label": "calls"}}, {"data": {"id": "edge_7", "source": "profile", "target": "events", "label": "calls"}}, {"data": {"id": "edge_8", "source": "schema_registry", "target": "mixins", "label": "calls"}}, {"data": {"id": "edge_9", "source": "worker", "target": "merge_policy", "label": "calls"}}, {"data": {"id": "edge_10", "source": "worker", "target": "mixins", "label": "calls"}}, {"data": {"id": "edge_11", "source": "worker", "target": "profile", "label": "calls"}}, {"data": {"id": "edge_12", "source": "worker", "target": "schema_registry", "label": "calls"}}, {"data": {"id": "edge_13", "source": "worker", "target": "audiences", "label": "calls"}}, {"data": {"id": "edge_14", "source": "worker", "target": "core", "label": "calls"}}, {"data": {"id": "edge_15", "source": "worker", "target": "events", "label": "calls"}}, {"data": {"id": "edge_16", "source": "worker", "target": "identity", "label": "calls"}}, {"data": {"id": "edge_17", "source": "worker", "target": "journeys", "label": "calls"}}, {"data": {"id": "edge_18", "source": "channels", "target": "net_guard", "label": "calls"}}, {"data": {"id": "edge_19", "source": "connectors", "target": "net_guard", "label": "calls"}}, {"data": {"id": "edge_20", "source": "connectors", "target": "events", "label": "calls"}}, {"data": {"id": "edge_21", "source": "identity", "target": "mixins", "label": "calls"}}, {"data": {"id": "edge_22", "source": "identity", "target": "events", "label": "calls"}}, {"data": {"id": "edge_23", "source": "journeys", "target": "templates", "label": "calls"}}, {"data": {"id": "edge_24", "source": "journeys", "target": "audiences", "label": "calls"}}]};
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+  elements: data,
+  style: [
+    { selector: 'node', style: {
+      'label': 'data(label)',
+      'shape': 'round-rectangle',
+      'background-color': '#eef2ff',
+      'border-color': '#6366f1',
+      'border-width': 1,
+      'width': 'label',
+      'padding': '10px',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'font-size': '12px',
+    }},
+    { selector: 'edge', style: {
+      'label': 'data(label)',
+      'curve-style': 'bezier',
+      'target-arrow-shape': 'triangle',
+      'font-size': '10px',
+      'text-rotation': 'autorotate',
+    }}
+  ],
+  layout: { name: 'dagre', rankDir: 'LR' }
+});
+cy.on('tap', 'node', evt => {
+  const node = evt.target;
+  if (node.data('linkUrl')) { window.location.href = node.data('linkUrl'); }
+});
+</script>
+</body>
+</html>
