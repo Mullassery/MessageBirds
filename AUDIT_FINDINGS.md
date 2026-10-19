@@ -63,8 +63,9 @@ Implemented the first destination-breadth step in this pass:
 - API accepts the new kinds and dispatches per destination kind.
 - `cargo test --workspace`: 64 passed, 0 failed; fmt/clippy clean.
 
-Added per-tenant API keys (`MESSAGEBIRDS_API_KEYS`) plus coarse `read_only` and
-`writer` roles; tenant mismatches are rejected. The original single-key path
-remains an admin key. SSO/full RBAC remains open.
+Added per-tenant API keys (`MESSAGEBIRDS_API_KEYS`), coarse `read_only`/`writer`
+roles, and optional forward-auth SSO via `MESSAGEBIRDS_TRUST_PROXY_AUTH=1`
+(`X-Auth-Request-*` headers). The original single-key path remains admin.
+Full in-app RBAC remains open.
 Also still open: Salesforce/Braze/ad-platform connectors and live vendor
 verification.

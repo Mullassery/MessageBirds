@@ -14,7 +14,7 @@ use std::collections::HashMap;
 
 use axum::body::{to_bytes, Body};
 use axum::extract::State;
-use axum::http::{Method, Request, StatusCode, Uri};
+use axum::http::{HeaderMap, Method, Request, StatusCode, Uri};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -37,6 +37,7 @@ pub struct KeyPolicy {
 #[derive(Clone, Default)]
 pub struct ApiKeyAuth {
     keys: HashMap<String, KeyPolicy>,
+    trust_proxy: bool,
 }
 
 impl ApiKeyAuth {
@@ -58,23 +59,73 @@ impl ApiKeyAuth {
                 );
             }
         }
-        Self { keys }
+        Self {
+            keys,
+            trust_proxy: false,
+        }
     }
 
     pub fn from_env() -> Self {
         if let Ok(raw) = std::env::var("MESSAGEBIRDS_API_KEYS") {
             if let Some(keys) = parse_keys(&raw) {
-                return Self { keys };
+                return Self {
+                    keys,
+                    trust_proxy: false,
+                };
             }
         }
-        Self::with_tenant(
+        let mut auth = Self::with_tenant(
             std::env::var("MESSAGEBIRDS_API_KEY").ok(),
             std::env::var("MESSAGEBIRDS_API_KEY_TENANT").ok(),
-        )
+        );
+        auth.trust_proxy = std::env::var("MESSAGEBIRDS_TRUST_PROXY_AUTH")
+            .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+            .unwrap_or(false);
+        auth
     }
 
     pub fn enabled(&self) -> bool {
-        !self.keys.is_empty()
+        !self.keys.is_empty() || self.trust_proxy
+    }
+
+    pub fn trust_proxy(&self) -> bool {
+        self.trust_proxy
+    }
+
+    /// Resolve identity from a trusted forward-auth proxy (oauth2-proxy,
+    /// Authentik, etc.). The proxy MUST strip client-supplied headers.
+    pub fn proxy_policy(&self, headers: &HeaderMap) -> Option<KeyPolicy> {
+        if !self.trust_proxy {
+            return None;
+        }
+        let user = headers
+            .get("x-auth-request-user")
+            .and_then(|value| value.to_str().ok())
+            .map(str::trim)
+            .filter(|value| !value.is_empty())?;
+        let groups = headers
+            .get("x-auth-request-groups")
+            .and_then(|value| value.to_str().ok())
+            .unwrap_or("");
+        let role = if groups
+            .split(',')
+            .any(|group| group.trim() == "messagebirds-admin")
+        {
+            Role::Admin
+        } else if groups
+            .split(',')
+            .any(|group| group.trim() == "messagebirds-writer")
+        {
+            Role::Writer
+        } else {
+            Role::ReadOnly
+        };
+        let tenant = headers
+            .get("x-auth-request-tenant")
+            .and_then(|value| value.to_str().ok())
+            .and_then(|value| Uuid::parse_str(value.trim()).ok());
+        let _ = user;
+        Some(KeyPolicy { tenant, role })
     }
 
     /// `None` = no keys configured (auth disabled), `Some(policy)` = valid key.
@@ -153,7 +204,12 @@ pub async fn require(
         .headers()
         .get(axum::http::header::AUTHORIZATION)
         .and_then(|value| value.to_str().ok());
-    let Some(policy) = auth.resolve(header) else {
+    let policy = if auth.trust_proxy() {
+        auth.proxy_policy(request.headers())
+    } else {
+        auth.resolve(header)
+    };
+    let Some(policy) = policy else {
         return (
             StatusCode::UNAUTHORIZED,
             Json(json!({
@@ -297,6 +353,32 @@ mod tests {
     }
 
     #[test]
+    fn proxy_auth_maps_groups_to_roles_and_tenant() {
+        let tenant = Uuid::new_v4();
+        let mut headers = HeaderMap::new();
+        headers.insert("x-auth-request-user", "ada".parse().unwrap());
+        headers.insert(
+            "x-auth-request-groups",
+            "staff,messagebirds-writer".parse().unwrap(),
+        );
+        headers.insert("x-auth-request-tenant", tenant.to_string().parse().unwrap());
+        let mut auth = ApiKeyAuth::new(None);
+        auth.trust_proxy = true;
+        let policy = auth.proxy_policy(&headers).unwrap();
+        assert_eq!(policy.role, Role::Writer);
+        assert_eq!(policy.tenant, Some(tenant));
+
+        headers.insert(
+            "x-auth-request-groups",
+            "messagebirds-admin".parse().unwrap(),
+        );
+        assert_eq!(auth.proxy_policy(&headers).unwrap().role, Role::Admin);
+
+        headers.remove("x-auth-request-user");
+        assert!(auth.proxy_policy(&headers).is_none());
+    }
+
+    #[test]
     fn read_only_role_is_limited_to_read_methods() {
         assert!(is_read_method(&Method::GET));
         assert!(is_read_method(&Method::HEAD));
@@ -327,6 +409,7 @@ mod tests {
     fn maps_multiple_keys_to_tenants() {
         let tenant = Uuid::new_v4();
         let auth = ApiKeyAuth {
+            trust_proxy: false,
             keys: HashMap::from([
                 (
                     "key-a".to_string(),

@@ -92,9 +92,10 @@ actionlint .github/workflows/ci.yml                             # clean
    for the first time on a deployment with existing identity data is a breaking change (a
    re-hash migration, not implemented here, would be needed). Tests added in
    `crates/identity/src/hash.rs`.
-5. **Per-tenant API keys + coarse roles; not full RBAC/SSO.**
-   `MESSAGEBIRDS_API_KEYS` maps keys to tenant UUIDs and optional roles:
-   `read_only`, `writer` (no config resources), or `admin`. Tenant mismatches
+5. **API keys + optional forward-auth SSO; not full RBAC.**
+   `MESSAGEBIRDS_API_KEYS` supports `read_only`, `writer`, and `admin`.
+   `MESSAGEBIRDS_TRUST_PROXY_AUTH=1` trusts `X-Auth-Request-*` headers from an
+   authenticating proxy (which must strip client headers). Tenant mismatches
    return 403. The older single-key `MESSAGEBIRDS_API_KEY` (+ `_TENANT`) is an admin
    key. There is still no login/session or SSO, and a key without a tenant
    binding is not tenant-scoped. When unset, behaviour is unchanged for local

@@ -960,7 +960,7 @@ checksum = "0e7465ac9959cc2b1404e8e2367b43684a6d13790fe23056cc8c6c5a6b7bcb94"
 
 [[package]]
 name = "mb-api"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -990,7 +990,7 @@ dependencies = [
 
 [[package]]
 name = "mb-audiences"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-recursion",
  "async-trait",
@@ -1005,7 +1005,7 @@ dependencies = [
 
 [[package]]
 name = "mb-channels"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1021,7 +1021,7 @@ dependencies = [
 
 [[package]]
 name = "mb-connectors"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1037,7 +1037,7 @@ dependencies = [
 
 [[package]]
 name = "mb-core"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "chrono",
  "serde",
@@ -1048,7 +1048,7 @@ dependencies = [
 
 [[package]]
 name = "mb-events"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "chrono",
  "mb-core",
@@ -1063,7 +1063,7 @@ dependencies = [
 
 [[package]]
 name = "mb-governance"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1077,7 +1077,7 @@ dependencies = [
 
 [[package]]
 name = "mb-identity"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1093,7 +1093,7 @@ dependencies = [
 
 [[package]]
 name = "mb-journeys"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1111,7 +1111,7 @@ dependencies = [
 
 [[package]]
 name = "mb-journeys-worker"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "mb-channels",
@@ -1126,7 +1126,7 @@ dependencies = [
 
 [[package]]
 name = "mb-merge-policy"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1140,7 +1140,7 @@ dependencies = [
 
 [[package]]
 name = "mb-mixins"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1156,7 +1156,7 @@ dependencies = [
 
 [[package]]
 name = "mb-namespaces"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1169,7 +1169,7 @@ dependencies = [
 
 [[package]]
 name = "mb-net-guard"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "reqwest",
  "thiserror 1.0.69",
@@ -1179,7 +1179,7 @@ dependencies = [
 
 [[package]]
 name = "mb-profile"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1195,7 +1195,7 @@ dependencies = [
 
 [[package]]
 name = "mb-schema-registry"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1209,7 +1209,7 @@ dependencies = [
 
 [[package]]
 name = "mb-templates"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1223,7 +1223,7 @@ dependencies = [
 
 [[package]]
 name = "mb-worker"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "chrono",

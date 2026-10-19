@@ -37,7 +37,7 @@ MessageBirds is a self-hosted CDP and engagement platform that implements the fu
 
 ## Project status
 
-`v0.7.0` (Rust workspace) / `messagebirds` 0.7.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
+`v0.8.0` (Rust workspace) / `messagebirds` 0.8.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
 
 ## Installation
 
@@ -68,8 +68,10 @@ templates, journeys, schemas, or mixins. Keys require
 `Authorization: Bearer <key>` on every route except `/healthz`; tenant
 mismatches are rejected with `403`, and `read_only` keys can only use
 GET/HEAD/OPTIONS. The older single-key `MESSAGEBIRDS_API_KEY` (+ `_TENANT`)
-still works as an admin key. There is no SSO; leave both unset for local
-development.
+still works as an admin key. For SSO, set `MESSAGEBIRDS_TRUST_PROXY_AUTH=1`
+behind an authenticating proxy that strips client headers: the API reads
+`X-Auth-Request-User`, `X-Auth-Request-Groups` (`messagebirds-admin`/`-writer`),
+and `X-Auth-Request-Tenant`. Leave all unset for local development.
 
 Before pointing this at real PII, set `MB_IDENTITY_HASH_PEPPER` (a random per-deployment secret) on the `api`, `worker`, and `journeys-worker` processes — it is mixed into the identity-matching hash in `crates/identity/src/hash.rs`. Leaving it unset reproduces the old unsalted behavior; see `SECURITY.md`.
 

@@ -7,6 +7,15 @@ backfilled here beyond what's independently verifiable from `git log` and `docs/
 see those for the detailed phase-by-phase narrative; this file is intentionally a summary, not a
 duplicate.
 
+## [0.8.0] - 2026-10-19
+
+### Added
+- Optional forward-auth SSO: `MESSAGEBIRDS_TRUST_PROXY_AUTH=1` reads
+  `X-Auth-Request-User`, `X-Auth-Request-Groups`, and
+  `X-Auth-Request-Tenant` from an authenticating proxy. Group
+  `messagebirds-admin`/`messagebirds-writer` maps to that role; otherwise
+  read-only. The proxy must strip client-supplied headers.
+
 ## [0.7.0] - 2026-10-19
 
 ### Added
