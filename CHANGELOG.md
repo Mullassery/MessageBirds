@@ -7,6 +7,14 @@ backfilled here beyond what's independently verifiable from `git log` and `docs/
 see those for the detailed phase-by-phase narrative; this file is intentionally a summary, not a
 duplicate.
 
+## [0.7.0] - 2026-10-19
+
+### Added
+- `writer` API-key role: can write profiles/events/audiences and other data
+  endpoints, but cannot modify destinations, policies, channels, templates,
+  journeys, schemas, or mixins. `read_only` and `admin` remain. Still not
+  SSO/full RBAC.
+
 ## [0.6.0] - 2026-10-19
 
 ### Added

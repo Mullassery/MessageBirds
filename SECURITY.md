@@ -10,9 +10,10 @@ are the reason why. This is not hedging; see `ROADMAP_HONEST.md` for the full te
 This is pre-production software. The following are known, disclosed, unfixed gaps — not
 hypothetical risks:
 
-- **Per-tenant API keys + coarse read-only role, not full RBAC/SSO.**
-  `MESSAGEBIRDS_API_KEYS` maps keys to tenant UUIDs and optional roles
-  (`read_only` allows GET/HEAD/OPTIONS only); tenant mismatches return 403.
+- **Per-tenant API keys + coarse roles, not full RBAC/SSO.**
+  `MESSAGEBIRDS_API_KEYS` maps keys to tenant UUIDs and optional roles:
+  `read_only` (GET/HEAD/OPTIONS), `writer` (data writes, no config resources),
+  or `admin` (default). Tenant mismatches return 403.
   The older `MESSAGEBIRDS_API_KEY` + `_TENANT` pair is an admin key. There is
   still no login/session or SSO, and `tenant_id` remains a plain column. A key
   configured without a tenant binding is not tenant-scoped.

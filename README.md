@@ -37,7 +37,7 @@ MessageBirds is a self-hosted CDP and engagement platform that implements the fu
 
 ## Project status
 
-`v0.6.0` (Rust workspace) / `messagebirds` 0.6.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
+`v0.7.0` (Rust workspace) / `messagebirds` 0.7.0 on PyPI. Phases 1–5 of the reference architecture are built (core event platform → identity → CDP → governance → engagement), with client-side collection, the edge gateway, and PyReverseETL activation layered on top. Active and integration-test-backed; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the source of truth for what's real vs. deferred at each layer, and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) tracks technical debt and security findings with file:line specifics.
 
 ## Installation
 
@@ -62,7 +62,9 @@ npm run dev --workspace=ui                   # http://localhost:3000
 
 Set `MESSAGEBIRDS_API_KEYS` to a JSON object mapping keys to tenant UUIDs
 (`{"key-a":"<uuid>"}`) or to objects with a role
-(`{"viewer":{"tenant_id":"<uuid>","role":"read_only"}}`). Keys require
+(`{"viewer":{"tenant_id":"<uuid>","role":"read_only"}}`); `writer` can write
+profiles/events/audiences but cannot modify destinations, policies, channels,
+templates, journeys, schemas, or mixins. Keys require
 `Authorization: Bearer <key>` on every route except `/healthz`; tenant
 mismatches are rejected with `403`, and `read_only` keys can only use
 GET/HEAD/OPTIONS. The older single-key `MESSAGEBIRDS_API_KEY` (+ `_TENANT`)

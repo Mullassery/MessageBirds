@@ -24,6 +24,7 @@ use uuid::Uuid;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Role {
     Admin,
+    Writer,
     ReadOnly,
 }
 
@@ -117,6 +118,7 @@ fn parse_keys(raw: &str) -> Option<HashMap<String, KeyPolicy>> {
                     .and_then(|value| Uuid::parse_str(value.trim()).ok());
                 let role = match map.get("role").and_then(|value| value.as_str()) {
                     Some("read_only") | Some("readonly") | Some("viewer") => Role::ReadOnly,
+                    Some("writer") | Some("read_write") | Some("operator") => Role::Writer,
                     _ => Role::Admin,
                 };
                 KeyPolicy { tenant, role }
@@ -169,6 +171,16 @@ pub async fn require(
         )
             .into_response();
     }
+    if policy.role == Role::Writer
+        && !is_read_method(request.method())
+        && is_admin_path(request.uri().path())
+    {
+        return (
+            StatusCode::FORBIDDEN,
+            Json(json!({"error": "this API key cannot modify configuration resources"})),
+        )
+            .into_response();
+    }
 
     // Per-key tenant binding. This prevents a key from acting across tenants,
     // but it is not a full role/SSO system.
@@ -205,6 +217,21 @@ pub async fn require(
 
 fn is_read_method(method: &Method) -> bool {
     matches!(*method, Method::GET | Method::HEAD | Method::OPTIONS)
+}
+
+fn is_admin_path(path: &str) -> bool {
+    const ADMIN_PREFIXES: [&str; 7] = [
+        "/destinations",
+        "/policies",
+        "/channels",
+        "/templates",
+        "/journeys",
+        "/schemas",
+        "/mixins",
+    ];
+    ADMIN_PREFIXES
+        .iter()
+        .any(|prefix| path == *prefix || path.starts_with(&format!("{prefix}/")))
 }
 
 fn requested_tenant(uri: &Uri, body: &[u8]) -> Option<Uuid> {
@@ -264,6 +291,9 @@ mod tests {
         assert_eq!(keys["admin"].role, Role::Admin);
         assert_eq!(keys["viewer"].tenant, Some(tenant));
         assert_eq!(keys["viewer"].role, Role::ReadOnly);
+
+        let writer = parse_keys(r#"{"writer":{"role":"writer"}}"#).unwrap();
+        assert_eq!(writer["writer"].role, Role::Writer);
     }
 
     #[test]
@@ -272,6 +302,14 @@ mod tests {
         assert!(is_read_method(&Method::HEAD));
         assert!(!is_read_method(&Method::POST));
         assert!(!is_read_method(&Method::DELETE));
+    }
+
+    #[test]
+    fn writer_is_blocked_from_admin_paths_only() {
+        assert!(is_admin_path("/destinations"));
+        assert!(is_admin_path("/policies/123"));
+        assert!(!is_admin_path("/events"));
+        assert!(!is_admin_path("/profiles/1/merge"));
     }
 
     #[test]
