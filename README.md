@@ -136,6 +136,18 @@ webhooks.
 - [SECURITY.md](SECURITY.md) — current security posture and how to report a vulnerability
 - [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, test commands, PR expectations
 
+## Known issues and deferred work
+
+**Blocked / failed:**
+- Live HubSpot/Klaviyo sandbox verification (no vendor credentials).
+- Android SDK build verification (no Android toolchain).
+- More destination connectors.
+
+**Rejected / deferred:**
+- AI decisioning/agents and audience sequence conditions until the connector layer is broader.
+
+Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+
 ## Queue status
 
 Shipped, blocked/failed, and rejected work for this repository is documented in
