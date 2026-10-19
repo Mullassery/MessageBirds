@@ -16,8 +16,9 @@ hypothetical risks:
   from an authenticating proxy's `X-Auth-Request-*` headers; the proxy MUST
   strip client-supplied versions. Tenant mismatches return 403.
   The older `MESSAGEBIRDS_API_KEY` + `_TENANT` pair is an admin key. There is
-  still no login/session or SSO, and `tenant_id` remains a plain column. A key
-  configured without a tenant binding is not tenant-scoped.
+  no in-app login/session/RBAC; SSO is only via the trusted proxy above.
+  `tenant_id` remains a plain column, and a key configured without a tenant
+  binding is not tenant-scoped.
 - **`edge/ingest-gateway` has no write-key/API-key check.** It validates CORS and request-body
   shape only, then forwards to `mb-api`. It has also never been deployed (no `wrangler deploy`
   has been run against a real Cloudflare account), which limits real-world exposure to zero today,
