@@ -148,11 +148,6 @@ webhooks.
 
 Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
 
-## Queue status
-
-Shipped, blocked/failed, and rejected work for this repository is documented in
-[`QUEUE_STATUS.md`](QUEUE_STATUS.md).
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Bug/security reports: see [SECURITY.md](SECURITY.md) — please don't file security issues as public GitHub issues. Behavior changes are tracked in [CHANGELOG.md](CHANGELOG.md).
