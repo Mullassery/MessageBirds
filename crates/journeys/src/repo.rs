@@ -35,6 +35,12 @@ pub trait JourneyRepo: Send + Sync {
         audience_id: Uuid,
     ) -> Result<Vec<JourneyDefinition>, JourneyError>;
 
+    async fn find_by_event_trigger(
+        &self,
+        tenant_id: Uuid,
+        event_type: &str,
+    ) -> Result<Vec<JourneyDefinition>, JourneyError>;
+
     async fn get_runs(&self, journey_id: Uuid) -> Result<Vec<JourneyRun>, JourneyError>;
 
     async fn get_profile_runs(
@@ -182,6 +188,28 @@ impl JourneyRepo for PgJourneyRepo {
                 if aid == audience_id {
                     matched.push(journey);
                 }
+            }
+        }
+        Ok(matched)
+    }
+
+    async fn find_by_event_trigger(
+        &self,
+        tenant_id: Uuid,
+        event_type: &str,
+    ) -> Result<Vec<JourneyDefinition>, JourneyError> {
+        let rows = sqlx::query_as::<_, JourneyRow>(&format!(
+            "SELECT {JOURNEY_COLUMNS} FROM journeys WHERE tenant_id = $1 AND status = 'active'"
+        ))
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await?;
+
+        let mut matched = Vec::new();
+        for row in rows {
+            let journey: JourneyDefinition = row.try_into()?;
+            if journey.trigger.matches_event(event_type) {
+                matched.push(journey);
             }
         }
         Ok(matched)

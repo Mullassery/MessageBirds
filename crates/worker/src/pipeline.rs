@@ -202,6 +202,16 @@ impl Pipeline {
                     self.journeys.start_run(journey.id, profile_id).await?;
                 }
             }
+
+            // Event-triggered journeys: start a run when the ingested event
+            // type matches an active journey's Trigger::Event.
+            let event_journeys = self
+                .journeys
+                .find_by_event_trigger(envelope.tenant_id.0, &envelope.event_type)
+                .await?;
+            for journey in event_journeys {
+                self.journeys.start_run(journey.id, profile_id).await?;
+            }
         }
 
         Ok(Outcome::Accepted { profile_id })

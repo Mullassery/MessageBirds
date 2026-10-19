@@ -14,6 +14,13 @@ pub enum Trigger {
     Event { event_type: String },
 }
 
+impl Trigger {
+    /// Whether this trigger matches an ingested event type.
+    pub fn matches_event(&self, event_type: &str) -> bool {
+        matches!(self, Trigger::Event { event_type: expected } if expected == event_type)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SplitBranch {
     pub next: String,
@@ -211,4 +218,18 @@ pub enum StepOutcome {
     Progressed,
     Waiting,
     Completed,
+}
+
+#[cfg(test)]
+mod trigger_tests {
+    use super::Trigger;
+
+    #[test]
+    fn event_trigger_matches_exact_type_only() {
+        let trigger = Trigger::Event {
+            event_type: "order.completed".into(),
+        };
+        assert!(trigger.matches_event("order.completed"));
+        assert!(!trigger.matches_event("order.cancelled"));
+    }
 }

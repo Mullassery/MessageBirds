@@ -75,6 +75,19 @@ and `X-Auth-Request-Tenant`. Leave all unset for local development.
 
 Before pointing this at real PII, set `MB_IDENTITY_HASH_PEPPER` (a random per-deployment secret) on the `api`, `worker`, and `journeys-worker` processes — it is mixed into the identity-matching hash in `crates/identity/src/hash.rs`. Leaving it unset reproduces the old unsalted behavior; see `SECURITY.md`.
 
+## Event-triggered journeys
+
+Active journeys can now start from an ingested event type, not only audience
+entry:
+
+```json
+{ "trigger": { "type": "event", "event_type": "order.completed" } }
+```
+
+The worker matches `Trigger::Event` against the event's `event_type` after
+persisting the event and syncing audience membership, then starts a durable run
+for the resolved profile. Audience-entry triggers continue to work unchanged.
+
 ## Quick start
 
 ```bash
