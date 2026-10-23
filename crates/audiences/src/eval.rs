@@ -62,7 +62,7 @@ fn numeric(
 /// Walks a full `Condition` tree — `Attribute` nodes are pure
 /// (`eval_attribute_op` above); `Event` nodes query `events` for an
 /// occurrence count; `And`/`Or`/`Not` recurse. Shared by the audience
-/// engine (`evaluate_and_sync_membership`) and `mb-journeys`' `Condition`
+/// engine (`evaluate_and_sync_membership`) and `pch-journeys`' `Condition`
 /// nodes, so both use identical evaluation semantics rather than two
 /// subtly different copies.
 #[async_recursion]

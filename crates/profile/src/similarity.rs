@@ -2,7 +2,7 @@ use strsim::jaro_winkler;
 
 /// The non-identity signals used to score whether two profiles might be
 /// the same customer. Deliberately not identity claims — those are
-/// resolved deterministically (`mb-identity`) and hashed, so they can't be
+/// resolved deterministically (`pch-identity`) and hashed, so they can't be
 /// fuzzy-compared. This is a suggestion, never an automatic merge.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct PersonSignal {

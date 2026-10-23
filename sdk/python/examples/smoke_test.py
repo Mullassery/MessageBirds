@@ -5,7 +5,7 @@ End-to-end proof that the foundation works, from Python:
   merge policy, profile projection) -> GET /profiles/by-identity
 
 Run against a live stack: `docker compose up -d postgres redpanda`,
-`cargo run -p api`, `cargo run -p worker`, then `python examples/smoke_test.py`.
+`cargo run -p pch-api`, `cargo run -p pch-worker`, then `python examples/smoke_test.py`.
 Mirrors `sdk/js/examples/smoke-test.ts`.
 """
 
@@ -17,10 +17,14 @@ import time
 import uuid
 from datetime import datetime, timezone
 
-from messagebirds import EventEnvelope, MessageBirdsClient
+from pycustomerhub import EventEnvelope, PyCustomerHubClient
 
-base_url = os.environ.get("MESSAGEBIRDS_API_URL", "http://localhost:8080")
-client = MessageBirdsClient(base_url)
+base_url = (
+    os.environ.get("PYCUSTOMERHUB_API_URL")
+    or os.environ.get("MESSAGEBIRDS_API_URL")
+    or "http://localhost:8080"
+)
+client = PyCustomerHubClient(base_url)
 
 tenant_id = str(uuid.uuid4())
 anonymous_id = f"anon-{uuid.uuid4()}"

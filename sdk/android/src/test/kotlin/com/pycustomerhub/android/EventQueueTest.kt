@@ -1,4 +1,4 @@
-package com.messagebirds.android
+package com.pycustomerhub.android
 
 import java.io.File
 import java.util.UUID
@@ -13,10 +13,10 @@ import org.junit.Test
  * `sdk/ios/Tests/.../EventQueueTests.swift` — same scenarios, same
  * queue/retry/backoff contract. NOT run in this session (no
  * `gradle`/Android SDK here); written for CI / a machine with the
- * Android SDK installed. See the note on `MessageBirdsAnalytics`.
+ * Android SDK installed. See the note on `PyCustomerHubAnalytics`.
  */
 class EventQueueTest {
-    private fun tempFile(): File = File.createTempFile("mb-queue-${UUID.randomUUID()}", ".json")
+    private fun tempFile(): File = File.createTempFile("pch-queue-${UUID.randomUUID()}", ".json")
 
     private fun envelope(id: String): EventEnvelope = EventEnvelope(
         eventId = id,

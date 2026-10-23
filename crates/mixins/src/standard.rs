@@ -1,4 +1,4 @@
-use mb_schema_registry::FieldDef;
+use pch_schema_registry::FieldDef;
 use serde::Deserialize;
 use std::collections::BTreeMap;
 

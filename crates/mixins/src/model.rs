@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use mb_schema_registry::FieldDef;
+use pch_schema_registry::FieldDef;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use uuid::Uuid;

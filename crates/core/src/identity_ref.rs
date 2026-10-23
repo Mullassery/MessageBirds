@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// A single identity claim attached to an event, in some namespace
 /// (`email`, `anonymous_id`, `device_id`, ...). Namespaces are registered
-/// via `mb-namespaces`, never hardcoded here.
+/// via `pch-namespaces`, never hardcoded here.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct IdentityRef {
     pub namespace: String,

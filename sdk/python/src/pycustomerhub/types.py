@@ -1,11 +1,11 @@
 """
-Typed dict mirrors of the MessageBirds API's JSON shapes.
+Typed dict mirrors of the PyCustomerHub API's JSON shapes.
 
 Kept in lockstep with `sdk/js/src/types.ts`, which is itself kept in
 lockstep with the Rust types it names in each docstring. Python is
 dynamically typed, so nothing here is enforced at runtime — these exist
 for editor/mypy support when building your own requests against
-`MessageBirdsClient.request`, the same role `apiFetch<T>` plays for
+`PyCustomerHubClient.request`, the same role `apiFetch<T>` plays for
 `ui/` against the TS types.
 """
 
@@ -15,7 +15,7 @@ from typing import Any, Literal, TypedDict
 
 
 class IdentityRef(TypedDict, total=False):
-    """Mirrors `mb_core::IdentityRef`."""
+    """Mirrors `pch_core::IdentityRef`."""
 
     namespace: str
     value: str
@@ -25,14 +25,14 @@ class IdentityRef(TypedDict, total=False):
 
 
 class EventSource(TypedDict):
-    """Mirrors `mb_core::EventSource`."""
+    """Mirrors `pch_core::EventSource`."""
 
     type: str
     name: str
 
 
 class SchemaRef(TypedDict):
-    """Mirrors `mb_core::SchemaRef`."""
+    """Mirrors `pch_core::SchemaRef`."""
 
     name: str
     version: str
@@ -40,7 +40,7 @@ class SchemaRef(TypedDict):
 
 class EventEnvelope(TypedDict, total=False):
     """
-    Mirrors `mb_core::EventEnvelope`. `context["profile_updates"]`, if
+    Mirrors `pch_core::EventEnvelope`. `context["profile_updates"]`, if
     present, is a map of mixin key (`"core/person@1.0"`) to the field
     values this event contributes to that mixin — see docs/OCDS.md.
     """
@@ -61,7 +61,7 @@ class EventEnvelope(TypedDict, total=False):
 
 
 class FieldProvenance(TypedDict):
-    """Mirrors `mb_profile::FieldProvenance`."""
+    """Mirrors `pch_profile::FieldProvenance`."""
 
     profile_id: str
     mixin_key: str
@@ -85,7 +85,7 @@ class ProfileView(TypedDict):
 
 
 class IdentityNode(TypedDict):
-    """Mirrors `mb_identity::IdentityNode`."""
+    """Mirrors `pch_identity::IdentityNode`."""
 
     id: str
     tenant_id: str
@@ -103,7 +103,7 @@ IdentityAuditKind = Literal["linked", "merged", "split"]
 
 class IdentityAuditEntry(TypedDict):
     """
-    Mirrors `mb_identity::IdentityAuditEntry`. `namespace`/`value_hash`
+    Mirrors `pch_identity::IdentityAuditEntry`. `namespace`/`value_hash`
     are `None` for `"merged"` entries, which record a whole-profile
     merge rather than one identity claim.
     """
@@ -170,7 +170,7 @@ FieldType = Literal["string", "number", "boolean", "object", "array"]
 
 
 class FieldDef(TypedDict, total=False):
-    """Mirrors `mb_schema_registry::FieldDef`."""
+    """Mirrors `pch_schema_registry::FieldDef`."""
 
     type: FieldType
     required: bool
@@ -182,7 +182,7 @@ SchemaStatus = Literal["active", "deprecated"]
 
 
 class SchemaDefinition(TypedDict):
-    """Mirrors `mb_schema_registry::Schema` — response of `GET /schemas/{name}/{version}`."""
+    """Mirrors `pch_schema_registry::Schema` — response of `GET /schemas/{name}/{version}`."""
 
     id: str
     name: str
@@ -196,7 +196,7 @@ MixinStatus = Literal["active", "deprecated"]
 
 
 class MixinDef(TypedDict):
-    """Mirrors `mb_mixins::MixinDef` — response of `GET /mixins/{namespace}/{name}/{version}`."""
+    """Mirrors `pch_mixins::MixinDef` — response of `GET /mixins/{namespace}/{name}/{version}`."""
 
     id: str
     namespace: str
@@ -211,7 +211,7 @@ AttributeOp = Literal[
     "equals", "not_equals", "exists", "not_exists", "greater_than", "less_than", "contains"
 ]
 
-# Mirrors `mb_audiences::Condition`. Externally tagged on the wire
+# Mirrors `pch_audiences::Condition`. Externally tagged on the wire
 # (`{"attribute": {...}}`, not `{"type": "attribute", ...}`) — plain
 # dicts, not a TypedDict union, since Python has no discriminated-union
 # construct that maps cleanly onto externally-tagged serde output.
@@ -221,7 +221,7 @@ AudienceStatus = Literal["active", "archived"]
 
 
 class AudienceDefinition(TypedDict):
-    """Mirrors `mb_audiences::AudienceDefinition`."""
+    """Mirrors `pch_audiences::AudienceDefinition`."""
 
     id: str
     tenant_id: str
@@ -236,7 +236,7 @@ MembershipKind = Literal["entered", "exited"]
 
 
 class Membership(TypedDict):
-    """Mirrors `mb_audiences::Membership` — current membership state."""
+    """Mirrors `pch_audiences::Membership` — current membership state."""
 
     audience_id: str
     profile_id: str
@@ -245,7 +245,7 @@ class Membership(TypedDict):
 
 
 class Destination(TypedDict):
-    """Mirrors `mb_connectors::Destination`."""
+    """Mirrors `pch_connectors::Destination`."""
 
     id: str
     tenant_id: str
@@ -256,7 +256,7 @@ class Destination(TypedDict):
     created_at: str
 
 
-# Mirrors `mb_governance::Reason` — why an activation was denied.
+# Mirrors `pch_governance::Reason` — why an activation was denied.
 # Internally tagged on `"kind"` (safe here since `Reason` isn't
 # recursive) — again a plain dict rather than a TypedDict union.
 Reason = dict[str, Any]
@@ -294,7 +294,7 @@ Effect = Literal["allow", "deny"]
 
 
 class Policy(TypedDict):
-    """Mirrors `mb_governance::Policy`."""
+    """Mirrors `pch_governance::Policy`."""
 
     id: str
     tenant_id: str
@@ -306,7 +306,7 @@ class Policy(TypedDict):
 
 
 class ConsentEvent(TypedDict):
-    """Mirrors `mb_governance::ConsentEvent` — one append-only consent record."""
+    """Mirrors `pch_governance::ConsentEvent` — one append-only consent record."""
 
     id: str
     tenant_id: str
@@ -321,7 +321,7 @@ class ConsentEvent(TypedDict):
 
 
 class ConsentState(TypedDict):
-    """Mirrors `mb_governance::ConsentState` — derived current state for one purpose."""
+    """Mirrors `pch_governance::ConsentState` — derived current state for one purpose."""
 
     purpose: str
     granted: bool
@@ -353,7 +353,7 @@ class PolicySimulateResponse(TypedDict):
 
 
 class Channel(TypedDict):
-    """Mirrors `mb_channels::Channel`. Only `kind: "webhook"` has a real transport."""
+    """Mirrors `pch_channels::Channel`. Only `kind: "webhook"` has a real transport."""
 
     id: str
     tenant_id: str
@@ -364,7 +364,7 @@ class Channel(TypedDict):
 
 
 class MessageTemplate(TypedDict):
-    """Mirrors `mb_templates::MessageTemplate`."""
+    """Mirrors `pch_templates::MessageTemplate`."""
 
     id: str
     tenant_id: str
@@ -377,25 +377,25 @@ class MessageTemplate(TypedDict):
 
 
 class RenderedTemplate(TypedDict):
-    """Mirrors `mb_templates::RenderedTemplate`."""
+    """Mirrors `pch_templates::RenderedTemplate`."""
 
     subject: str | None
     body: str
     missing_variables: list[str]
 
 
-# Mirrors `mb_journeys::Trigger`. Internally tagged on `"kind"`, like `NodeKind`.
+# Mirrors `pch_journeys::Trigger`. Internally tagged on `"kind"`, like `NodeKind`.
 Trigger = dict[str, Any]
 
 
 class SplitBranch(TypedDict):
-    """Mirrors `mb_journeys::SplitBranch`."""
+    """Mirrors `pch_journeys::SplitBranch`."""
 
     next: str
     weight: int
 
 
-# Mirrors `mb_journeys::NodeKind` flattened with `id` into `mb_journeys::Node`
+# Mirrors `pch_journeys::NodeKind` flattened with `id` into `pch_journeys::Node`
 # — internally tagged on `"kind"` (not recursive, unlike `Condition`).
 Node = dict[str, Any]
 
@@ -403,7 +403,7 @@ JourneyStatus = Literal["active", "archived"]
 
 
 class JourneyDefinition(TypedDict):
-    """Mirrors `mb_journeys::JourneyDefinition`. Graph is a flat node list, not nested."""
+    """Mirrors `pch_journeys::JourneyDefinition`. Graph is a flat node list, not nested."""
 
     id: str
     tenant_id: str
@@ -420,7 +420,7 @@ RunStatus = Literal["running", "waiting", "completed", "failed"]
 
 
 class JourneyRun(TypedDict):
-    """Mirrors `mb_journeys::JourneyRun`."""
+    """Mirrors `pch_journeys::JourneyRun`."""
 
     id: str
     tenant_id: str
@@ -445,7 +445,7 @@ RunEventKind = Literal[
 
 
 class JourneyRunEvent(TypedDict):
-    """Mirrors `mb_journeys::JourneyRunEvent` — one append-only step log entry."""
+    """Mirrors `pch_journeys::JourneyRunEvent` — one append-only step log entry."""
 
     id: str
     run_id: str
@@ -456,7 +456,7 @@ class JourneyRunEvent(TypedDict):
 
 
 class ContactPolicy(TypedDict):
-    """Mirrors `mb_journeys::ContactPolicy`. `channel_id: None` applies across all channels."""
+    """Mirrors `pch_journeys::ContactPolicy`. `channel_id: None` applies across all channels."""
 
     id: str
     tenant_id: str

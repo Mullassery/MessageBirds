@@ -1,4 +1,4 @@
-use mb_core::IdentityRef;
+use pch_core::IdentityRef;
 use serde_json::{json, Map, Value};
 
 /// The `core/identity@1.0` mixin's fields are derived automatically from

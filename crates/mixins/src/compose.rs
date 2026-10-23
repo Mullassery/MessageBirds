@@ -1,4 +1,4 @@
-use mb_schema_registry::{validate_fields, FieldViolation};
+use pch_schema_registry::{validate_fields, FieldViolation};
 
 use crate::model::MixinDef;
 

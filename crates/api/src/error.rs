@@ -3,11 +3,14 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde_json::json;
 
+#[derive(Debug)]
 pub enum ApiError {
     BadRequest(String),
+    Unauthorized(String),
     NotFound(String),
     Conflict(String),
     Forbidden(String),
+    ServiceUnavailable(String),
     Internal(String),
 }
 
@@ -15,18 +18,20 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
             ApiError::BadRequest(m) => (StatusCode::BAD_REQUEST, m),
+            ApiError::Unauthorized(m) => (StatusCode::UNAUTHORIZED, m),
             ApiError::NotFound(m) => (StatusCode::NOT_FOUND, m),
             ApiError::Conflict(m) => (StatusCode::CONFLICT, m),
             ApiError::Forbidden(m) => (StatusCode::FORBIDDEN, m),
+            ApiError::ServiceUnavailable(m) => (StatusCode::SERVICE_UNAVAILABLE, m),
             ApiError::Internal(m) => (StatusCode::INTERNAL_SERVER_ERROR, m),
         };
         (status, Json(json!({ "error": message }))).into_response()
     }
 }
 
-impl From<mb_schema_registry::SchemaError> for ApiError {
-    fn from(e: mb_schema_registry::SchemaError) -> Self {
-        use mb_schema_registry::SchemaError::*;
+impl From<pch_schema_registry::SchemaError> for ApiError {
+    fn from(e: pch_schema_registry::SchemaError) -> Self {
+        use pch_schema_registry::SchemaError::*;
         match e {
             AlreadyExists { .. } | IncompatibleChange { .. } => ApiError::Conflict(e.to_string()),
             NotFound { .. } | NoVersions(_) => ApiError::NotFound(e.to_string()),
@@ -35,9 +40,9 @@ impl From<mb_schema_registry::SchemaError> for ApiError {
     }
 }
 
-impl From<mb_mixins::MixinError> for ApiError {
-    fn from(e: mb_mixins::MixinError) -> Self {
-        use mb_mixins::MixinError::*;
+impl From<pch_mixins::MixinError> for ApiError {
+    fn from(e: pch_mixins::MixinError) -> Self {
+        use pch_mixins::MixinError::*;
         match e {
             ReservedNamespace => ApiError::Forbidden(e.to_string()),
             AlreadyExists { .. } => ApiError::Conflict(e.to_string()),
@@ -47,9 +52,9 @@ impl From<mb_mixins::MixinError> for ApiError {
     }
 }
 
-impl From<mb_namespaces::NamespaceError> for ApiError {
-    fn from(e: mb_namespaces::NamespaceError) -> Self {
-        use mb_namespaces::NamespaceError::*;
+impl From<pch_namespaces::NamespaceError> for ApiError {
+    fn from(e: pch_namespaces::NamespaceError) -> Self {
+        use pch_namespaces::NamespaceError::*;
         match e {
             AlreadyExists(_) => ApiError::Conflict(e.to_string()),
             NotFound(_) => ApiError::NotFound(e.to_string()),
@@ -58,9 +63,9 @@ impl From<mb_namespaces::NamespaceError> for ApiError {
     }
 }
 
-impl From<mb_profile::ProfileError> for ApiError {
-    fn from(e: mb_profile::ProfileError) -> Self {
-        use mb_profile::ProfileError::*;
+impl From<pch_profile::ProfileError> for ApiError {
+    fn from(e: pch_profile::ProfileError) -> Self {
+        use pch_profile::ProfileError::*;
         match e {
             NotAnObject => ApiError::BadRequest(e.to_string()),
             MergePolicy(_) | Db(_) => ApiError::Internal(e.to_string()),
@@ -68,9 +73,9 @@ impl From<mb_profile::ProfileError> for ApiError {
     }
 }
 
-impl From<mb_identity::IdentityError> for ApiError {
-    fn from(e: mb_identity::IdentityError) -> Self {
-        use mb_identity::IdentityError::*;
+impl From<pch_identity::IdentityError> for ApiError {
+    fn from(e: pch_identity::IdentityError) -> Self {
+        use pch_identity::IdentityError::*;
         match e {
             NotLinked { .. } => ApiError::BadRequest(e.to_string()),
             Db(_) => ApiError::Internal(e.to_string()),
@@ -78,9 +83,9 @@ impl From<mb_identity::IdentityError> for ApiError {
     }
 }
 
-impl From<mb_audiences::AudienceError> for ApiError {
-    fn from(e: mb_audiences::AudienceError) -> Self {
-        use mb_audiences::AudienceError::*;
+impl From<pch_audiences::AudienceError> for ApiError {
+    fn from(e: pch_audiences::AudienceError) -> Self {
+        use pch_audiences::AudienceError::*;
         match e {
             NotFound(_) => ApiError::NotFound(e.to_string()),
             Corrupt(_) | Db(_) => ApiError::Internal(e.to_string()),
@@ -88,9 +93,9 @@ impl From<mb_audiences::AudienceError> for ApiError {
     }
 }
 
-impl From<mb_connectors::ConnectorRepoError> for ApiError {
-    fn from(e: mb_connectors::ConnectorRepoError) -> Self {
-        use mb_connectors::ConnectorRepoError::*;
+impl From<pch_connectors::ConnectorRepoError> for ApiError {
+    fn from(e: pch_connectors::ConnectorRepoError) -> Self {
+        use pch_connectors::ConnectorRepoError::*;
         match e {
             NotFound(_) => ApiError::NotFound(e.to_string()),
             Db(_) => ApiError::Internal(e.to_string()),
@@ -98,18 +103,18 @@ impl From<mb_connectors::ConnectorRepoError> for ApiError {
     }
 }
 
-impl From<mb_governance::GovernanceError> for ApiError {
-    fn from(e: mb_governance::GovernanceError) -> Self {
-        use mb_governance::GovernanceError::*;
+impl From<pch_governance::GovernanceError> for ApiError {
+    fn from(e: pch_governance::GovernanceError) -> Self {
+        use pch_governance::GovernanceError::*;
         match e {
             Db(_) => ApiError::Internal(e.to_string()),
         }
     }
 }
 
-impl From<mb_channels::ChannelRepoError> for ApiError {
-    fn from(e: mb_channels::ChannelRepoError) -> Self {
-        use mb_channels::ChannelRepoError::*;
+impl From<pch_channels::ChannelRepoError> for ApiError {
+    fn from(e: pch_channels::ChannelRepoError) -> Self {
+        use pch_channels::ChannelRepoError::*;
         match e {
             NotFound(_) => ApiError::NotFound(e.to_string()),
             Db(_) => ApiError::Internal(e.to_string()),
@@ -117,9 +122,9 @@ impl From<mb_channels::ChannelRepoError> for ApiError {
     }
 }
 
-impl From<mb_templates::TemplateError> for ApiError {
-    fn from(e: mb_templates::TemplateError) -> Self {
-        use mb_templates::TemplateError::*;
+impl From<pch_templates::TemplateError> for ApiError {
+    fn from(e: pch_templates::TemplateError) -> Self {
+        use pch_templates::TemplateError::*;
         match e {
             NotFound(_) | NoVersions(_) => ApiError::NotFound(e.to_string()),
             Db(_) => ApiError::Internal(e.to_string()),
@@ -127,9 +132,9 @@ impl From<mb_templates::TemplateError> for ApiError {
     }
 }
 
-impl From<mb_journeys::JourneyError> for ApiError {
-    fn from(e: mb_journeys::JourneyError) -> Self {
-        use mb_journeys::JourneyError::*;
+impl From<pch_journeys::JourneyError> for ApiError {
+    fn from(e: pch_journeys::JourneyError) -> Self {
+        use pch_journeys::JourneyError::*;
         match e {
             NotFound(_) | RunNotFound(_) | ProfileNotFound(_) => ApiError::NotFound(e.to_string()),
             UnknownNode(_) => ApiError::BadRequest(e.to_string()),
@@ -146,8 +151,8 @@ impl From<sqlx::Error> for ApiError {
     }
 }
 
-impl From<mb_events::EventsError> for ApiError {
-    fn from(e: mb_events::EventsError) -> Self {
+impl From<pch_events::EventsError> for ApiError {
+    fn from(e: pch_events::EventsError) -> Self {
         ApiError::Internal(e.to_string())
     }
 }

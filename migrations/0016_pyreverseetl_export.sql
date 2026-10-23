@@ -4,7 +4,7 @@
 -- by its own real Rust sync engine), not a per-record API like the
 -- webhook connector's DestinationConnector::send. Its Postgres source
 -- connector is pointed at this table permanently (one workflow, created
--- once outside MessageBirds via the pyreverseetl CLI); MessageBirds
+-- once outside PyCustomerHub via the pyreverseetl CLI); PyCustomerHub
 -- truncates and refills the rows scoped to one destination immediately
 -- before shelling out to `pyreverseetl execute-activation`, so each run
 -- only ever sees the members that just passed the consent check.

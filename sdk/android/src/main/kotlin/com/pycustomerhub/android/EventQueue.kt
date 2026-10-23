@@ -1,4 +1,4 @@
-package com.messagebirds.android
+package com.pycustomerhub.android
 
 import java.io.File
 import kotlin.math.min
@@ -13,11 +13,12 @@ private const val MAX_ATTEMPTS = 5
 /**
  * JSON-file-backed queue, mirroring `sdk/web`'s `EventQueue`
  * (`sdk/web/src/queue.ts`) and `sdk/ios`'s `EventQueue`
- * (`sdk/ios/Sources/MessageBirdsAnalytics/EventQueue.swift`) exactly:
- * `POST /events` takes one envelope, not a batch, so `flush` sends
- * serially and stops at the first failure rather than reordering or
- * hammering a possibly-down endpoint. A `Mutex` serializes concurrent
- * `enqueue`/`flush` calls, the coroutine equivalent of Swift's `actor`.
+ * (`sdk/ios/Sources/PyCustomerHubAnalytics/EventQueue.swift`) exactly.
+ * `POST /events` takes one envelope; this SDK does not use the `/v1/batch`
+ * translation endpoint, so `flush` sends serially and stops at the first
+ * failure rather than reordering or hammering a possibly-down endpoint. A
+ * `Mutex` serializes concurrent `enqueue`/`flush` calls, the coroutine
+ * equivalent of Swift's `actor`.
  */
 class EventQueue(
     private val file: File,

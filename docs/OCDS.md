@@ -1,6 +1,6 @@
 # Open Customer Data Schema (OCDS)
 
-OCDS is the canonical, implementation-independent data model MessageBirds is built around. It exists so that SDKs, connectors, the profile store, the merge policy engine, and (eventually) governance and activation all speak the same language — no connector gets to invent its own customer JSON.
+OCDS is the canonical, implementation-independent data model PyCustomerHub is built around. It exists so that SDKs, connectors, the profile store, the merge policy engine, and (eventually) governance and activation all speak the same language — no connector gets to invent its own customer JSON.
 
 This document describes the model as implemented in Phase 1. It will grow as later phases (governance labels, consent, marketing actions — see `ARCHITECTURE.md`) add their own primitives.
 
@@ -70,7 +70,7 @@ Mixin definitions live under a namespace: `core` is reserved for the standard li
 | `core/contact@1.0` | `email`, `phone`, `address` |
 | `core/device@1.0` | `device_id`, `platform`, `app_version`, `push_token` |
 
-Definitions live as YAML under `standard-mixins/` — that's the single source of truth, embedded into the `mb-mixins` crate at compile time and seeded into the registry at service startup. The rest of the library described in the product spec (`commerce`, `loyalty`, `subscription`, `consent`, `engagement`, ...) arrives in later phases alongside the primitives that consume them (audiences, governance, engagement).
+Definitions live as YAML under `standard-mixins/` — that's the single source of truth, embedded into the `pch-mixins` crate at compile time and seeded into the registry at service startup. The rest of the library described in the product spec (`commerce`, `loyalty`, `subscription`, `consent`, `engagement`, ...) arrives in later phases alongside the primitives that consume them (audiences, governance, engagement).
 
 `core/identity@1.0` is special: its fields are derived automatically from an event's `identity` claims by the worker, not supplied via `context.profile_updates` — the identity graph is the source of truth for "who is this."
 

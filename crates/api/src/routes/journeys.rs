@@ -4,7 +4,7 @@ use axum::Json;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use mb_journeys::{
+use pch_journeys::{
     ContactPolicy, ContactPolicyRepo, JourneyDefinition, JourneyRepo, JourneyRun, JourneyRunEvent,
     Node, Trigger,
 };

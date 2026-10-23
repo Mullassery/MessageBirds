@@ -1,4 +1,4 @@
-import type { PolicySimulateResponse } from "@messagebirds/sdk";
+import type { PolicySimulateResponse } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 
 export default async function PolicySimulatorPage({

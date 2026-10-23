@@ -18,8 +18,8 @@ pub struct KlaviyoConnector {
 impl KlaviyoConnector {
     pub fn new() -> Self {
         let builder = reqwest::Client::builder().timeout(Duration::from_secs(15));
-        let builder = if mb_net_guard::guard_enabled() {
-            mb_net_guard::harden_client(builder)
+        let builder = if pch_net_guard::guard_enabled() {
+            pch_net_guard::harden_client(builder)
         } else {
             builder
         };
@@ -72,7 +72,7 @@ impl DestinationConnector for KlaviyoConnector {
             attributes.insert("phone_number".into(), json!(value));
         }
 
-        let url = mb_net_guard::validate_outbound_url(&format!("{base_url}/api/profile-import/"))
+        let url = pch_net_guard::validate_outbound_url(&format!("{base_url}/api/profile-import/"))
             .map_err(|e| ConnectorError::UnsafeUrl(e.to_string()))?;
 
         let response = self

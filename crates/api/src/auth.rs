@@ -1,16 +1,21 @@
 //! Optional API-key authentication and coarse roles.
 //!
-//! Set `MESSAGEBIRDS_API_KEYS` (JSON: `{"key": "tenant-uuid"}` or
+//! Set `PYCUSTOMERHUB_API_KEYS` (JSON: `{"key": "tenant-uuid"}` or
 //! `{"key": {"tenant_id": "uuid", "role": "read_only"}}`) or the single-key
-//! `MESSAGEBIRDS_API_KEY` (+ optional `_TENANT`) to require
+//! `PYCUSTOMERHUB_API_KEY` (+ optional `_TENANT`) to require
 //! `Authorization: Bearer <key>` on every route except `/healthz`. Keys can be
 //! bound to a tenant, and requests with a different `tenant_id` are rejected.
 //! `read_only` keys may only use GET/HEAD/OPTIONS. This is API-key auth plus a
 //! coarse write gate, not SSO or a full role system; handlers still take
 //! `tenant_id` from the request. When no keys are configured, behaviour is
 //! unchanged (local dev).
+//!
+//! The old `MESSAGEBIRDS_*` variable names and `messagebirds-admin` /
+//! `messagebirds-writer` SSO groups are accepted as deprecated fallbacks so
+//! existing deployments keep working during migration.
 
 use std::collections::HashMap;
+use std::env;
 
 use axum::body::{to_bytes, Body};
 use axum::extract::State;
@@ -20,6 +25,10 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde_json::json;
 use uuid::Uuid;
+
+fn env_compat(primary: &str, legacy: &str) -> Result<String, env::VarError> {
+    env::var(primary).or_else(|_| env::var(legacy))
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Role {
@@ -66,7 +75,7 @@ impl ApiKeyAuth {
     }
 
     pub fn from_env() -> Self {
-        if let Ok(raw) = std::env::var("MESSAGEBIRDS_API_KEYS") {
+        if let Ok(raw) = env_compat("PYCUSTOMERHUB_API_KEYS", "MESSAGEBIRDS_API_KEYS") {
             if let Some(keys) = parse_keys(&raw) {
                 return Self {
                     keys,
@@ -75,12 +84,19 @@ impl ApiKeyAuth {
             }
         }
         let mut auth = Self::with_tenant(
-            std::env::var("MESSAGEBIRDS_API_KEY").ok(),
-            std::env::var("MESSAGEBIRDS_API_KEY_TENANT").ok(),
+            env_compat("PYCUSTOMERHUB_API_KEY", "MESSAGEBIRDS_API_KEY").ok(),
+            env_compat(
+                "PYCUSTOMERHUB_API_KEY_TENANT",
+                "MESSAGEBIRDS_API_KEY_TENANT",
+            )
+            .ok(),
         );
-        auth.trust_proxy = std::env::var("MESSAGEBIRDS_TRUST_PROXY_AUTH")
-            .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
-            .unwrap_or(false);
+        auth.trust_proxy = env_compat(
+            "PYCUSTOMERHUB_TRUST_PROXY_AUTH",
+            "MESSAGEBIRDS_TRUST_PROXY_AUTH",
+        )
+        .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .unwrap_or(false);
         auth
     }
 
@@ -107,15 +123,15 @@ impl ApiKeyAuth {
             .get("x-auth-request-groups")
             .and_then(|value| value.to_str().ok())
             .unwrap_or("");
-        let role = if groups
-            .split(',')
-            .any(|group| group.trim() == "messagebirds-admin")
-        {
+        let has_group = |name: &str, legacy: &str| {
+            groups.split(',').any(|group| {
+                let group = group.trim();
+                group == name || group == legacy
+            })
+        };
+        let role = if has_group("pycustomerhub-admin", "messagebirds-admin") {
             Role::Admin
-        } else if groups
-            .split(',')
-            .any(|group| group.trim() == "messagebirds-writer")
-        {
+        } else if has_group("pycustomerhub-writer", "messagebirds-writer") {
             Role::Writer
         } else {
             Role::ReadOnly
@@ -198,6 +214,12 @@ pub async fn require(
     next: Next,
 ) -> Response {
     if request.uri().path() == "/healthz" {
+        return next.run(request).await;
+    }
+    // Tracking-source routes authenticate with their own write key, because
+    // analytics clients cannot also send an admin bearer token. The handlers
+    // fail closed when PYCUSTOMERHUB_HTTP_WRITE_KEYS is unset.
+    if request.uri().path().starts_with("/v1/") {
         return next.run(request).await;
     }
     let header = request
@@ -359,7 +381,7 @@ mod tests {
         headers.insert("x-auth-request-user", "ada".parse().unwrap());
         headers.insert(
             "x-auth-request-groups",
-            "staff,messagebirds-writer".parse().unwrap(),
+            "staff,pycustomerhub-writer".parse().unwrap(),
         );
         headers.insert("x-auth-request-tenant", tenant.to_string().parse().unwrap());
         let mut auth = ApiKeyAuth::new(None);
@@ -370,9 +392,21 @@ mod tests {
 
         headers.insert(
             "x-auth-request-groups",
+            "pycustomerhub-admin".parse().unwrap(),
+        );
+        assert_eq!(auth.proxy_policy(&headers).unwrap().role, Role::Admin);
+
+        headers.insert(
+            "x-auth-request-groups",
             "messagebirds-admin".parse().unwrap(),
         );
         assert_eq!(auth.proxy_policy(&headers).unwrap().role, Role::Admin);
+
+        headers.insert(
+            "x-auth-request-groups",
+            "messagebirds-writer".parse().unwrap(),
+        );
+        assert_eq!(auth.proxy_policy(&headers).unwrap().role, Role::Writer);
 
         headers.remove("x-auth-request-user");
         assert!(auth.proxy_policy(&headers).is_none());

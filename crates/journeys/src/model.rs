@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use mb_audiences::Condition;
+use pch_audiences::Condition;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -30,8 +30,8 @@ pub struct SplitBranch {
 /// One journey step. Not recursive — nodes reference each other by string
 /// `id`, a flat graph rather than a nested tree, which sidesteps the exact
 /// serde `Content`-buffering compile failure `Condition` hit in Phase 3
-/// (see `mb-audiences`) by construction. `Condition` reuses
-/// `mb_audiences::Condition` directly — a journey can branch on the same
+/// (see `pch-audiences`) by construction. `Condition` reuses
+/// `pch_audiences::Condition` directly — a journey can branch on the same
 /// attribute/event logic an audience is built from.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import type { Effect } from "@messagebirds/sdk";
+import type { Effect } from "@pycustomerhub/sdk";
 import { apiFetch, ApiError } from "@/lib/api";
 
 export async function createPolicy(formData: FormData) {

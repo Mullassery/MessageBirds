@@ -1,4 +1,4 @@
-import type { DeadLetterEventView } from "@messagebirds/sdk";
+import type { DeadLetterEventView } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 
 export default async function DataQualityPage({

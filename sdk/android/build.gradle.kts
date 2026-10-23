@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.messagebirds.android"
+    namespace = "com.pycustomerhub.android"
     compileSdk = 34
 
     defaultConfig {

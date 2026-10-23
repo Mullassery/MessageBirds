@@ -7,7 +7,7 @@ import type {
   Membership,
   MergeSuggestion,
   ProfileView,
-} from "@messagebirds/sdk";
+} from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 import { mergeProfile, recordConsent, splitIdentity } from "./actions";
 

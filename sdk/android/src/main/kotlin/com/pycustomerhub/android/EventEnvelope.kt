@@ -1,9 +1,9 @@
-package com.messagebirds.android
+package com.pycustomerhub.android
 
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** Mirrors `mb_core::IdentityRef` (see `sdk/js/src/types.ts`, `sdk/ios/.../EventEnvelope.swift`). */
+/** Mirrors `pch_core::IdentityRef` (see `sdk/js/src/types.ts`, `sdk/ios/.../EventEnvelope.swift`). */
 data class IdentityRef(
     val namespace: String,
     val value: String,
@@ -20,7 +20,7 @@ data class IdentityRef(
     }
 }
 
-/** Mirrors `mb_core::EventSource`. */
+/** Mirrors `pch_core::EventSource`. */
 data class EventSource(val type: String, val name: String) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("type", type)
@@ -28,7 +28,7 @@ data class EventSource(val type: String, val name: String) {
     }
 }
 
-/** Mirrors `mb_core::SchemaRef`. */
+/** Mirrors `pch_core::SchemaRef`. */
 data class SchemaRef(val name: String, val version: String) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("name", name)
@@ -37,7 +37,7 @@ data class SchemaRef(val name: String, val version: String) {
 }
 
 /**
- * Mirrors `mb_core::EventEnvelope` — the JSON body `POST /events` expects.
+ * Mirrors `pch_core::EventEnvelope` — the JSON body `POST /events` expects.
  * `data`/`context` are `org.json.JSONObject` directly (Android's built-in
  * JSON support) rather than a generic map + a serialization dependency —
  * callers building nested structures use `JSONObject`/`JSONArray` the same

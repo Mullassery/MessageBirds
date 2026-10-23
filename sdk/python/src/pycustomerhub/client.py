@@ -13,11 +13,11 @@ class ApiError(Exception):
         self.status = status
 
 
-class MessageBirdsClient:
+class PyCustomerHubClient:
     """
-    Mirrors `sdk/js`'s `MessageBirdsClient` exactly: the core send-an-event,
+    Mirrors `sdk/js`'s `PyCustomerHubClient` exactly: the core send-an-event,
     read-a-profile loop, not a method per API endpoint. For everything
-    else, build your own request against `base_url` — the `messagebirds`
+    else, build your own request against `base_url` — the `pycustomerhub`
     package's `types` module gives you typed dict shapes for the response,
     the same role `apiFetch<T>` plays against the TS types for `ui/`.
     """

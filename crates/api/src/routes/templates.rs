@@ -4,7 +4,7 @@ use axum::Json;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use mb_templates::{MessageTemplate, TemplateRepo};
+use pch_templates::{MessageTemplate, TemplateRepo};
 
 use crate::error::ApiError;
 use crate::routes::audiences::TenantQuery;

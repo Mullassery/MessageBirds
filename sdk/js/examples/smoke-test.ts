@@ -5,14 +5,17 @@
  *   merge policy, profile projection) -> GET /profiles/by-identity
  *
  * Run against a live stack: `docker compose up -d postgres redpanda`,
- * `cargo run -p api`, `cargo run -p worker`, then `npm run smoke-test`.
+ * `cargo run -p pch-api`, `cargo run -p pch-worker`, then `npm run smoke-test`.
  */
 import { randomUUID } from "node:crypto";
-import { MessageBirdsClient } from "../src/client.js";
+import { PyCustomerHubClient } from "../src/client.js";
 import type { EventEnvelope } from "../src/types.js";
 
-const baseUrl = process.env.MESSAGEBIRDS_API_URL ?? "http://localhost:8080";
-const client = new MessageBirdsClient({ baseUrl });
+const baseUrl =
+  process.env.PYCUSTOMERHUB_API_URL ??
+  process.env.MESSAGEBIRDS_API_URL ??
+  "http://localhost:8080";
+const client = new PyCustomerHubClient({ baseUrl });
 
 const tenantId = randomUUID();
 const anonymousId = `anon-${randomUUID()}`;

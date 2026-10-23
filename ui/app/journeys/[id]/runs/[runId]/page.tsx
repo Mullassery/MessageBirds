@@ -1,4 +1,4 @@
-import type { JourneyRunEvent } from "@messagebirds/sdk";
+import type { JourneyRunEvent } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 
 export default async function JourneyRunEventsPage({

@@ -1,4 +1,4 @@
-/** Mirrors `mb_core::IdentityRef`. */
+/** Mirrors `pch_core::IdentityRef`. */
 export interface IdentityRef {
   namespace: string;
   value: string;
@@ -7,20 +7,20 @@ export interface IdentityRef {
   confidence?: number;
 }
 
-/** Mirrors `mb_core::EventSource`. */
+/** Mirrors `pch_core::EventSource`. */
 export interface EventSource {
   type: string;
   name: string;
 }
 
-/** Mirrors `mb_core::SchemaRef`. */
+/** Mirrors `pch_core::SchemaRef`. */
 export interface SchemaRef {
   name: string;
   version: string;
 }
 
 /**
- * Mirrors `mb_core::EventEnvelope`. `context.profile_updates`, if present,
+ * Mirrors `pch_core::EventEnvelope`. `context.profile_updates`, if present,
  * is a map of mixin key (`"core/person@1.0"`) to the field values this
  * event contributes to that mixin — see docs/OCDS.md.
  */
@@ -40,7 +40,7 @@ export interface EventEnvelope {
   tenant_id: string;
 }
 
-/** Mirrors `mb_profile::FieldProvenance`. */
+/** Mirrors `pch_profile::FieldProvenance`. */
 export interface FieldProvenance {
   profile_id: string;
   mixin_key: string;
@@ -62,7 +62,7 @@ export interface ProfileView {
   provenance: FieldProvenance[];
 }
 
-/** Mirrors `mb_identity::IdentityNode`. */
+/** Mirrors `pch_identity::IdentityNode`. */
 export interface IdentityNode {
   id: string;
   tenant_id: string;
@@ -78,7 +78,7 @@ export interface IdentityNode {
 export type IdentityAuditKind = "linked" | "merged" | "split";
 
 /**
- * Mirrors `mb_identity::IdentityAuditEntry`. `namespace`/`value_hash` are
+ * Mirrors `pch_identity::IdentityAuditEntry`. `namespace`/`value_hash` are
  * `null` for `"merged"` entries, which record a whole-profile merge rather
  * than one identity claim.
  */
@@ -139,10 +139,10 @@ export interface EventDetail {
   occurred_at: string;
 }
 
-/** Mirrors `mb_schema_registry::FieldType`. */
+/** Mirrors `pch_schema_registry::FieldType`. */
 export type FieldType = "string" | "number" | "boolean" | "object" | "array";
 
-/** Mirrors `mb_schema_registry::FieldDef`. */
+/** Mirrors `pch_schema_registry::FieldDef`. */
 export interface FieldDef {
   type: FieldType;
   required: boolean;
@@ -153,7 +153,7 @@ export interface FieldDef {
 
 export type SchemaStatus = "active" | "deprecated";
 
-/** Mirrors `mb_schema_registry::Schema` — response of `GET /schemas/{name}/{version}`. */
+/** Mirrors `pch_schema_registry::Schema` — response of `GET /schemas/{name}/{version}`. */
 export interface SchemaDefinition {
   id: string;
   name: string;
@@ -165,7 +165,7 @@ export interface SchemaDefinition {
 
 export type MixinStatus = "active" | "deprecated";
 
-/** Mirrors `mb_mixins::MixinDef` — response of `GET /mixins/{namespace}/{name}/{version}`. */
+/** Mirrors `pch_mixins::MixinDef` — response of `GET /mixins/{namespace}/{name}/{version}`. */
 export interface MixinDef {
   id: string;
   namespace: string;
@@ -176,7 +176,7 @@ export interface MixinDef {
   created_at: string;
 }
 
-/** Mirrors `mb_audiences::AttributeOp`. */
+/** Mirrors `pch_audiences::AttributeOp`. */
 export type AttributeOp =
   | "equals"
   | "not_equals"
@@ -187,7 +187,7 @@ export type AttributeOp =
   | "contains";
 
 /**
- * Mirrors `mb_audiences::Condition`. Externally tagged on the wire
+ * Mirrors `pch_audiences::Condition`. Externally tagged on the wire
  * (`{"attribute": {...}}`, not `{"type": "attribute", ...}`) — see the
  * comment on the Rust type for why.
  */
@@ -200,7 +200,7 @@ export type Condition =
 
 export type AudienceStatus = "active" | "archived";
 
-/** Mirrors `mb_audiences::AudienceDefinition`. */
+/** Mirrors `pch_audiences::AudienceDefinition`. */
 export interface AudienceDefinition {
   id: string;
   tenant_id: string;
@@ -213,7 +213,7 @@ export interface AudienceDefinition {
 
 export type MembershipKind = "entered" | "exited";
 
-/** Mirrors `mb_audiences::Membership` — current membership state. */
+/** Mirrors `pch_audiences::Membership` — current membership state. */
 export interface Membership {
   audience_id: string;
   profile_id: string;
@@ -221,7 +221,7 @@ export interface Membership {
   exited_at: string | null;
 }
 
-/** Mirrors `mb_connectors::Destination`. */
+/** Mirrors `pch_connectors::Destination`. */
 export interface Destination {
   id: string;
   tenant_id: string;
@@ -234,7 +234,7 @@ export interface Destination {
 }
 
 /**
- * Mirrors `mb_governance::Reason` — why an activation was denied.
+ * Mirrors `pch_governance::Reason` — why an activation was denied.
  * Externally tagged (`{"kind": "label_policy_denied", ...}`) via serde's
  * `#[serde(tag = "kind")]`, which is fine here since `Reason` isn't
  * recursive (unlike `Condition`).
@@ -271,7 +271,7 @@ export interface DeadLetterEventView {
 
 export type Effect = "allow" | "deny";
 
-/** Mirrors `mb_governance::Policy`. */
+/** Mirrors `pch_governance::Policy`. */
 export interface Policy {
   id: string;
   tenant_id: string;
@@ -282,7 +282,7 @@ export interface Policy {
   created_at: string;
 }
 
-/** Mirrors `mb_governance::ConsentEvent` — one append-only consent record. */
+/** Mirrors `pch_governance::ConsentEvent` — one append-only consent record. */
 export interface ConsentEvent {
   id: string;
   tenant_id: string;
@@ -296,7 +296,7 @@ export interface ConsentEvent {
   created_at: string;
 }
 
-/** Mirrors `mb_governance::ConsentState` — derived current state for one purpose. */
+/** Mirrors `pch_governance::ConsentState` — derived current state for one purpose. */
 export interface ConsentState {
   purpose: string;
   granted: boolean;
@@ -319,7 +319,7 @@ export interface PolicySimulateResponse {
   final_decision: "allow" | "deny" | "partial";
 }
 
-/** Mirrors `mb_channels::Channel`. Only `kind: "webhook"` has a real transport. */
+/** Mirrors `pch_channels::Channel`. Only `kind: "webhook"` has a real transport. */
 export interface Channel {
   id: string;
   tenant_id: string;
@@ -329,7 +329,7 @@ export interface Channel {
   created_at: string;
 }
 
-/** Mirrors `mb_templates::MessageTemplate`. */
+/** Mirrors `pch_templates::MessageTemplate`. */
 export interface MessageTemplate {
   id: string;
   tenant_id: string;
@@ -341,26 +341,26 @@ export interface MessageTemplate {
   created_at: string;
 }
 
-/** Mirrors `mb_templates::RenderedTemplate`. */
+/** Mirrors `pch_templates::RenderedTemplate`. */
 export interface RenderedTemplate {
   subject: string | null;
   body: string;
   missing_variables: string[];
 }
 
-/** Mirrors `mb_journeys::Trigger`. Internally tagged on `kind`, like `NodeKind`. */
+/** Mirrors `pch_journeys::Trigger`. Internally tagged on `kind`, like `NodeKind`. */
 export type Trigger =
   | { kind: "audience_entered"; audience_id: string }
   | { kind: "event"; event_type: string };
 
-/** Mirrors `mb_journeys::SplitBranch`. */
+/** Mirrors `pch_journeys::SplitBranch`. */
 export interface SplitBranch {
   next: string;
   weight: number;
 }
 
 /**
- * Mirrors `mb_journeys::NodeKind` — internally tagged on `kind`
+ * Mirrors `pch_journeys::NodeKind` — internally tagged on `kind`
  * (not recursive, unlike `Condition`, so this is safe to tag).
  */
 export type NodeKind =
@@ -370,12 +370,12 @@ export type NodeKind =
   | { kind: "split"; branches: SplitBranch[] }
   | { kind: "end" };
 
-/** Mirrors `mb_journeys::Node` — `NodeKind` flattened alongside `id`. */
+/** Mirrors `pch_journeys::Node` — `NodeKind` flattened alongside `id`. */
 export type Node = { id: string } & NodeKind;
 
 export type JourneyStatus = "active" | "archived";
 
-/** Mirrors `mb_journeys::JourneyDefinition`. Graph is a flat node list, not nested. */
+/** Mirrors `pch_journeys::JourneyDefinition`. Graph is a flat node list, not nested. */
 export interface JourneyDefinition {
   id: string;
   tenant_id: string;
@@ -390,7 +390,7 @@ export interface JourneyDefinition {
 
 export type RunStatus = "running" | "waiting" | "completed" | "failed";
 
-/** Mirrors `mb_journeys::JourneyRun`. */
+/** Mirrors `pch_journeys::JourneyRun`. */
 export interface JourneyRun {
   id: string;
   tenant_id: string;
@@ -412,7 +412,7 @@ export type RunEventKind =
   | "action_failed"
   | "completed";
 
-/** Mirrors `mb_journeys::JourneyRunEvent` — one append-only step log entry. */
+/** Mirrors `pch_journeys::JourneyRunEvent` — one append-only step log entry. */
 export interface JourneyRunEvent {
   id: string;
   run_id: string;
@@ -422,7 +422,7 @@ export interface JourneyRunEvent {
   created_at: string;
 }
 
-/** Mirrors `mb_journeys::ContactPolicy`. `channel_id: null` applies across all channels. */
+/** Mirrors `pch_journeys::ContactPolicy`. `channel_id: null` applies across all channels. */
 export interface ContactPolicy {
   id: string;
   tenant_id: string;

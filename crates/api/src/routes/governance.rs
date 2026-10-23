@@ -6,13 +6,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use uuid::Uuid;
 
-use mb_audiences::AudienceRepo;
-use mb_connectors::DestinationRepo;
-use mb_governance::{
+use pch_audiences::AudienceRepo;
+use pch_connectors::DestinationRepo;
+use pch_governance::{
     consent_purpose_for_action, ConsentEvent, ConsentRepo, ConsentState, Effect, Policy,
     PolicyRepo, Reason,
 };
-use mb_profile::ProfileRepo;
+use pch_profile::ProfileRepo;
 
 use crate::error::ApiError;
 use crate::labels::{flatten_labels, profile_field_labels};

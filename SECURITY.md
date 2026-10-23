@@ -1,6 +1,6 @@
 # Security Policy
 
-MessageBirds is a Customer Data Platform: by design it ingests, resolves, and stores customer
+PyCustomerHub is a Customer Data Platform: by design it ingests, resolves, and stores customer
 identity claims (email, phone, device ids) and profile data. Read this before deploying it
 against real customer data — as of 2026-09-22, **it is not ready for that**, and the gaps below
 are the reason why. This is not hedging; see `ROADMAP_HONEST.md` for the full technical detail.
@@ -11,22 +11,22 @@ This is pre-production software. The following are known, disclosed, unfixed gap
 hypothetical risks:
 
 - **API keys + optional forward-auth SSO, still not full RBAC.**
-  `MESSAGEBIRDS_API_KEYS` maps keys to tenant UUIDs and roles (`read_only`,
-  `writer`, `admin`). With `MESSAGEBIRDS_TRUST_PROXY_AUTH=1`, identity comes
+  `PYCUSTOMERHUB_API_KEYS` maps keys to tenant UUIDs and roles (`read_only`,
+  `writer`, `admin`). With `PYCUSTOMERHUB_TRUST_PROXY_AUTH=1`, identity comes
   from an authenticating proxy's `X-Auth-Request-*` headers; the proxy MUST
   strip client-supplied versions. Tenant mismatches return 403.
-  The older `MESSAGEBIRDS_API_KEY` + `_TENANT` pair is an admin key. There is
+  The older `PYCUSTOMERHUB_API_KEY` + `_TENANT` pair is an admin key. There is
   no in-app login/session/RBAC; SSO is only via the trusted proxy above.
   `tenant_id` remains a plain column, and a key configured without a tenant
   binding is not tenant-scoped.
 - **`edge/ingest-gateway` has no write-key/API-key check.** It validates CORS and request-body
-  shape only, then forwards to `mb-api`. It has also never been deployed (no `wrangler deploy`
+  shape only, then forwards to `pch-api`. It has also never been deployed (no `wrangler deploy`
   has been run against a real Cloudflare account), which limits real-world exposure to zero today,
   but the code itself has no credential check to rely on once it is deployed.
 - **Identity-matching hashes support an optional per-deployment pepper, but it defaults to off.**
   `crates/identity/src/hash.rs` hashes email/phone/etc. with
   `SHA-256(pepper || ":" || namespace || ":" || value)`, where `pepper` comes from the
-  `MB_IDENTITY_HASH_PEPPER` environment variable (fixed 2026-09-22). **You must set this variable**
+  `PYCUSTOMERHUB_IDENTITY_HASH_PEPPER` environment variable (fixed 2026-09-22). **You must set this variable**
   in any environment that touches real PII, or the hash is still plain, unkeyed
   `SHA-256(namespace:value)` — low-entropy inputs remain crackable by a reader with database
   access via a precomputed dictionary. Setting the pepper for the first time on a deployment that
@@ -36,7 +36,7 @@ hypothetical risks:
 - **`sqlx` was upgraded from `0.7.4` to `0.8.6`** (fixed 2026-09-22), resolving RUSTSEC-2024-0363
   (binary protocol misinterpretation via truncating/overflowing casts). No breaking API changes
   in `sqlx` 0.8 affected this codebase (no compile-time `query!`/`query_as!` macros are used).
-- **No rate limiting anywhere** — not in `mb-api`, not in `edge/ingest-gateway`.
+- **No rate limiting anywhere** — not in `pch-api`, not in `edge/ingest-gateway`.
 - **No multi-tenancy isolation** beyond the `tenant_id` column convention described above.
 
 If you deploy this today, deploy it behind a network boundary you control (not the open internet),
@@ -47,21 +47,21 @@ with no real customer PII, until authentication and tenant isolation exist.
 This is a solo-maintained open-source project. Please report suspected vulnerabilities privately
 rather than opening a public GitHub issue:
 
-- Use **[GitHub Security Advisories](https://github.com/Mullassery/MessageBirds/security/advisories/new)**
+- Use **[GitHub Security Advisories](https://github.com/Mullassery/PyCustomerHub/security/advisories/new)**
   for this repository ("Report a vulnerability" under the Security tab), or
 - Email **mullassery@gmail.com** with a description, reproduction steps, and impact assessment.
 
 There is no dedicated security team and no SLA. As a solo maintainer, expect an initial
 acknowledgment within a few days on a best-effort basis, not a guaranteed response time. Please
 don't test against any real deployment other than one you control — there is no hosted/public
-instance of MessageBirds to test against.
+instance of PyCustomerHub to test against.
 
 ## Secrets and PII handling
 
 - No secrets, API keys, or credentials are committed to this repository (checked this pass: no
   `.env` files, no hardcoded tokens/keys/passwords in source, no credential-shaped files tracked
   by git). The only credential-looking string anywhere is the local dev Postgres password
-  (`messagebirds`/`messagebirds`) in `docker-compose.yml`, which matches the `DATABASE_URL` the
+  (`pycustomerhub`/`pycustomerhub`) in `docker-compose.yml`, which matches the `DATABASE_URL` the
   `README.md` quick-start already prints in plain text — a conventional local-dev-only value, not
   a real secret.
 - Raw event payloads (`events` table) legitimately store PII in cleartext where the source system

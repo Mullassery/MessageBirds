@@ -1,4 +1,4 @@
-import type { EventEnvelope } from "@messagebirds/sdk";
+import type { EventEnvelope } from "@pycustomerhub/sdk";
 
 export interface QueuedEvent {
   envelope: EventEnvelope;
@@ -11,15 +11,16 @@ export interface QueueStorage {
   setItem(key: string, value: string): void;
 }
 
-const STORAGE_KEY = "messagebirds:queue";
+export const QUEUE_STORAGE_KEY = "pycustomerhub:queue";
+export const LEGACY_QUEUE_STORAGE_KEY = "messagebirds:queue";
 const MAX_ATTEMPTS = 5;
 
 /**
  * Backs the event queue against `localStorage` (or any `QueueStorage`) so
- * events survive a page reload between "queued" and "sent". `mb-api`'s
- * `POST /events` takes one envelope, not a batch — there is no batch
- * endpoint to send this queue to in one call, so `flush` sends serially,
- * one real POST per event.
+ * events survive a page reload between "queued" and "sent". `pch-api`'s
+ * `POST /events` takes one envelope; this SDK does not use the
+ * `/v1/batch` translation endpoint, so `flush` sends serially, one real
+ * POST per event.
  */
 export class EventQueue {
   private readonly storage: QueueStorage;
@@ -73,17 +74,28 @@ export class EventQueue {
   }
 
   private load(): QueuedEvent[] {
-    const raw = this.storage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    try {
-      return JSON.parse(raw) as QueuedEvent[];
-    } catch {
-      return [];
-    }
+    const raw = this.storage.getItem(QUEUE_STORAGE_KEY);
+    if (raw !== null) return parseQueue(raw);
+
+    const legacy = this.storage.getItem(LEGACY_QUEUE_STORAGE_KEY);
+    if (legacy === null) return [];
+
+    const items = parseQueue(legacy);
+    this.persist(items);
+    this.storage.setItem(LEGACY_QUEUE_STORAGE_KEY, JSON.stringify([]));
+    return items;
   }
 
   private persist(items: QueuedEvent[]): void {
-    this.storage.setItem(STORAGE_KEY, JSON.stringify(items));
+    this.storage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(items));
+  }
+}
+
+function parseQueue(raw: string): QueuedEvent[] {
+  try {
+    return JSON.parse(raw) as QueuedEvent[];
+  } catch {
+    return [];
   }
 }
 

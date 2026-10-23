@@ -9,6 +9,7 @@ mod klaviyo;
 mod model;
 mod profile;
 mod repo;
+mod retry;
 mod webhook;
 
 pub use hubspot::HubspotConnector;
@@ -20,4 +21,5 @@ pub use model::{
 pub use repo::{
     ActivationRepo, ConnectorRepoError, DestinationRepo, PgConnectorRepo, PyReverseEtlExportRepo,
 };
+pub use retry::{is_retryable, rate_limit_interval, send_with_retry, RetryPolicy};
 pub use webhook::{ConnectorError, DestinationConnector, WebhookConnector};

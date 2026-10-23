@@ -6,7 +6,7 @@ CREATE TABLE destinations (
     config              jsonb NOT NULL,
     -- Section 14 marketing-action vocabulary this destination is declared
     -- for, e.g. {"ADVERTISING"}. Activating for an action not in this list
-    -- is a DestinationCapability denial (mb-governance).
+    -- is a DestinationCapability denial (pch-governance).
     supported_actions   text[] NOT NULL DEFAULT '{}',
     created_at          timestamptz NOT NULL DEFAULT now()
 );

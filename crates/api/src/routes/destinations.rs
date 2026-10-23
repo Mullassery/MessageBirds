@@ -3,15 +3,17 @@ use axum::http::StatusCode;
 use axum::Json;
 use serde::{Deserialize, Serialize};
 use tokio::process::Command;
+use tokio::time::{sleep, Instant};
 use uuid::Uuid;
 
-use mb_audiences::AudienceRepo;
-use mb_connectors::{
-    ActivationRepo, ActivationStatus, Destination, DestinationConnector, DestinationRepo,
-    ExportRow, PyReverseEtlExportRepo, HUBSPOT_KIND, KLAVIYO_KIND, PYREVERSEETL_KIND, WEBHOOK_KIND,
+use pch_audiences::AudienceRepo;
+use pch_connectors::{
+    rate_limit_interval, send_with_retry, ActivationRepo, ActivationStatus, Destination,
+    DestinationConnector, DestinationRepo, ExportRow, PyReverseEtlExportRepo, HUBSPOT_KIND,
+    KLAVIYO_KIND, PYREVERSEETL_KIND, WEBHOOK_KIND,
 };
-use mb_governance::{consent_purpose_for_action, ConsentRepo, PolicyRepo, Reason};
-use mb_profile::ProfileRepo;
+use pch_governance::{consent_purpose_for_action, ConsentRepo, PolicyRepo, Reason};
+use pch_profile::ProfileRepo;
 
 use crate::error::ApiError;
 use crate::labels::{flatten_labels, profile_field_labels};
@@ -116,6 +118,8 @@ pub async fn activate_audience(
     let mut sent = 0usize;
     let mut failed = 0usize;
     let mut blocked = Vec::new();
+    let send_interval = rate_limit_interval(&destination.config);
+    let mut last_send: Option<Instant> = None;
 
     for member in members {
         let Some(profile) = state.profiles.get(member.profile_id).await? else {
@@ -182,7 +186,17 @@ pub async fn activate_audience(
             "mixins": profile.mixins,
         });
 
-        let result = connector.send(&destination.config, &payload).await;
+        if let Some(interval) = send_interval {
+            if let Some(last) = last_send {
+                let elapsed = last.elapsed();
+                if elapsed < interval {
+                    sleep(interval - elapsed).await;
+                }
+            }
+        }
+
+        let result = send_with_retry(connector, &destination.config, &payload).await;
+        last_send = Some(Instant::now());
         let (status, detail) = match &result {
             Ok(()) => {
                 sent += 1;

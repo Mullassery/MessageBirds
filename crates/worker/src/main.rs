@@ -6,16 +6,16 @@ use std::sync::Arc;
 
 use sqlx::postgres::PgPoolOptions;
 
-use mb_audiences::PgAudienceRepo;
-use mb_channels::{PgChannelRepo, WebhookChannelAdapter};
-use mb_events::EventConsumer;
-use mb_identity::PgIdentityRepo;
-use mb_journeys::{Engine as JourneyEngine, PgJourneyRepo};
-use mb_merge_policy::PgMergePolicyRepo;
-use mb_mixins::PgMixinRepo;
-use mb_profile::PgProfileRepo;
-use mb_schema_registry::PgSchemaRepo;
-use mb_templates::PgTemplateRepo;
+use pch_audiences::PgAudienceRepo;
+use pch_channels::{PgChannelRepo, WebhookChannelAdapter};
+use pch_events::EventConsumer;
+use pch_identity::PgIdentityRepo;
+use pch_journeys::{Engine as JourneyEngine, PgJourneyRepo};
+use pch_merge_policy::PgMergePolicyRepo;
+use pch_mixins::PgMixinRepo;
+use pch_profile::PgProfileRepo;
+use pch_schema_registry::PgSchemaRepo;
+use pch_templates::PgTemplateRepo;
 
 use pipeline::{Outcome, Pipeline};
 
@@ -24,17 +24,18 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
-        "postgres://messagebirds:messagebirds@localhost:5432/messagebirds".into()
+        "postgres://pycustomerhub:pycustomerhub@localhost:5432/pycustomerhub".into()
     });
     let kafka_brokers = std::env::var("KAFKA_BROKERS").unwrap_or_else(|_| "localhost:9092".into());
-    let group_id = std::env::var("KAFKA_GROUP_ID").unwrap_or_else(|_| "messagebirds-worker".into());
+    let group_id =
+        std::env::var("KAFKA_GROUP_ID").unwrap_or_else(|_| "pycustomerhub-worker".into());
 
     let pool = PgPoolOptions::new()
         .max_connections(10)
         .connect(&database_url)
         .await?;
 
-    let consumer = EventConsumer::new(&kafka_brokers, &group_id, mb_events::RAW_EVENTS_TOPIC)?;
+    let consumer = EventConsumer::new(&kafka_brokers, &group_id, pch_events::RAW_EVENTS_TOPIC)?;
 
     let journey_engine = JourneyEngine {
         pool: pool.clone(),
@@ -55,7 +56,7 @@ async fn main() -> anyhow::Result<()> {
         journeys: Arc::new(PgJourneyRepo::new(pool, journey_engine)),
     };
 
-    tracing::info!("worker consuming '{}'", mb_events::RAW_EVENTS_TOPIC);
+    tracing::info!("worker consuming '{}'", pch_events::RAW_EVENTS_TOPIC);
 
     loop {
         let received = match consumer.recv().await {

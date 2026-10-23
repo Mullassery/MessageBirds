@@ -1,4 +1,4 @@
-from .client import ApiError, MessageBirdsClient
+from .client import ApiError, PyCustomerHubClient
 from .types import (
     ActivationSummary,
     AttributeOp,
@@ -53,7 +53,7 @@ from .types import (
 )
 
 __all__ = [
-    "MessageBirdsClient",
+    "PyCustomerHubClient",
     "ApiError",
     "ActivationSummary",
     "AttributeOp",

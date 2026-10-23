@@ -6,10 +6,10 @@ struct QueuedEvent: Codable {
 }
 
 /// JSON-file-backed queue, mirroring `sdk/web`'s `EventQueue`
-/// (`sdk/web/src/queue.ts`) design exactly: `POST /events` takes one
-/// envelope, not a batch, so `flush` sends serially and stops at the
-/// first failure rather than reordering or hammering a possibly-down
-/// endpoint. An `actor` (not a class + locks) since queue mutation must be
+/// (`sdk/web/src/queue.ts`) design exactly. `POST /events` takes one
+/// envelope; this SDK does not use the `/v1/batch` translation endpoint,
+/// so `flush` sends serially and stops at the first failure rather than
+/// reordering or hammering a possibly-down endpoint. An `actor` (not a class + locks) since queue mutation must be
 /// serialized across concurrent `track`/`flush` calls.
 actor EventQueue {
     private let fileURL: URL

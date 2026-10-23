@@ -3,7 +3,7 @@ import Foundation
 import UIKit
 #endif
 
-public final class MessageBirdsAnalytics {
+public final class PyCustomerHubAnalytics {
     private let tenantId: String
     private let apiUrl: URL
     private let session: URLSession
@@ -12,16 +12,17 @@ public final class MessageBirdsAnalytics {
     private var identity: [IdentityRef] = []
     private let defaults: UserDefaults
 
-    private static let anonymousIdKey = "messagebirds.anonymous_id"
+    private static let anonymousIdKey = "pycustomerhub.anonymous_id"
+    private static let legacyAnonymousIdKey = "messagebirds.anonymous_id"
 
     /// - Parameters:
     ///   - writeKey: The tenant to send events under. No real per-tenant
     ///     write-key issuance exists yet (see docs/ARCHITECTURE.md) — this
     ///     is the tenant_id itself until that's built.
-    ///   - apiUrl: Base URL of `mb-api` (or the edge ingestion gateway).
+    ///   - apiUrl: Base URL of `pch-api` (or the edge ingestion gateway).
     ///   - queueFileURL: Where the offline queue persists between
     ///     launches. Defaults to a file in the app's Documents directory.
-    ///   - session: Injectable for tests (see `MessageBirdsAnalyticsTests`).
+    ///   - session: Injectable for tests (see `PyCustomerHubAnalyticsTests`).
     ///   - defaults: Injectable for tests, so the anonymous id doesn't leak
     ///     across test runs via the real `UserDefaults.standard`.
     public init(
@@ -37,12 +38,18 @@ public final class MessageBirdsAnalytics {
         self.defaults = defaults
 
         let fileURL = queueFileURL ?? Self.defaultQueueFileURL()
+        if queueFileURL == nil {
+            Self.migrateLegacyQueueFileIfNeeded(to: fileURL)
+        }
         self.queue = EventQueue(fileURL: fileURL) { [session] envelope in
             await Self.sendOnce(envelope, apiUrl: URL(string: apiUrl)!, session: session)
         }
 
         if let existing = defaults.string(forKey: Self.anonymousIdKey) {
             self.anonymousId = existing
+        } else if let legacy = defaults.string(forKey: Self.legacyAnonymousIdKey) {
+            defaults.set(legacy, forKey: Self.anonymousIdKey)
+            self.anonymousId = legacy
         } else {
             let id = "anon-\(UUID().uuidString)"
             defaults.set(id, forKey: Self.anonymousIdKey)
@@ -95,7 +102,7 @@ public final class MessageBirdsAnalytics {
     @discardableResult
     public func flush() async -> Bool {
         await queue.flush { envelope in
-            print("[messagebirds] dropped event \(envelope.event_id) after repeated failures")
+            print("[pycustomerhub] dropped event \(envelope.event_id) after repeated failures")
         }
     }
 
@@ -118,6 +125,14 @@ public final class MessageBirdsAnalytics {
     private static func defaultQueueFileURL() -> URL {
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
-        return dir.appendingPathComponent("messagebirds-queue.json")
+        return dir.appendingPathComponent("pycustomerhub-queue.json")
+    }
+
+    private static func migrateLegacyQueueFileIfNeeded(to currentURL: URL) {
+        guard !FileManager.default.fileExists(atPath: currentURL.path) else { return }
+        let legacyURL = currentURL.deletingLastPathComponent()
+            .appendingPathComponent("messagebirds-queue.json")
+        guard FileManager.default.fileExists(atPath: legacyURL.path) else { return }
+        try? FileManager.default.moveItem(at: legacyURL, to: currentURL)
     }
 }

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import type { AudienceDefinition, Membership } from "@messagebirds/sdk";
+import type { AudienceDefinition, Membership } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 
 export default async function AudienceMembersPage({

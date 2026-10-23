@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::collections::BTreeMap;
 use uuid::Uuid;
 
-use mb_schema_registry::{FieldDef, Schema, SchemaRepo, SchemaStatus};
+use pch_schema_registry::{FieldDef, Schema, SchemaRepo, SchemaStatus};
 
 use crate::error::ApiError;
 use crate::state::AppState;

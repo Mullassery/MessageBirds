@@ -1,4 +1,4 @@
-//! Outbound-request SSRF guard shared by MessageBirds webhook transports.
+//! Outbound-request SSRF guard shared by PyCustomerHub webhook transports.
 //!
 //! Tenant-supplied webhook/channel URLs are attacker-controlled: without a
 //! guard, a tenant can point one at `http://169.254.169.254/` (cloud
@@ -15,7 +15,7 @@
 //!
 //! The guard is on by default. Operators who genuinely need to deliver to a
 //! private address in a trusted environment can disable it by setting
-//! `MESSAGEBIRDS_ALLOW_PRIVATE_WEBHOOKS=1`.
+//! `PYCUSTOMERHUB_ALLOW_PRIVATE_WEBHOOKS=1`.
 
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::sync::Arc;
@@ -36,10 +36,12 @@ pub enum OutboundUrlError {
 }
 
 /// Whether the SSRF guard is active. Defaults to on; the only way to turn
-/// it off is the explicit opt-out `MESSAGEBIRDS_ALLOW_PRIVATE_WEBHOOKS`.
+/// it off is the explicit opt-out `PYCUSTOMERHUB_ALLOW_PRIVATE_WEBHOOKS`.
 pub fn guard_enabled() -> bool {
+    let value = std::env::var("PYCUSTOMERHUB_ALLOW_PRIVATE_WEBHOOKS")
+        .or_else(|_| std::env::var("MESSAGEBIRDS_ALLOW_PRIVATE_WEBHOOKS"));
     !matches!(
-        std::env::var("MESSAGEBIRDS_ALLOW_PRIVATE_WEBHOOKS").as_deref(),
+        value.as_deref(),
         Ok("1") | Ok("true") | Ok("TRUE") | Ok("yes") | Ok("YES")
     )
 }

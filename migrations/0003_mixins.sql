@@ -13,5 +13,5 @@ CREATE INDEX mixins_namespace_name_idx ON mixins (namespace, name, created_at DE
 
 -- The standard library (core/identity, core/person, core/contact,
 -- core/device @1.0) is seeded at service startup from standard-mixins/*.yaml
--- (see mb-mixins::PgMixinRepo::seed_standard_library), not here, so the
+-- (see pch-mixins::PgMixinRepo::seed_standard_library), not here, so the
 -- YAML files stay the single source of truth for their shape.

@@ -1,4 +1,7 @@
-const API_URL = process.env.MESSAGEBIRDS_API_URL ?? "http://localhost:8080";
+const API_URL =
+  process.env.PYCUSTOMERHUB_API_URL ??
+  process.env.MESSAGEBIRDS_API_URL ??
+  "http://localhost:8080";
 
 export class ApiError extends Error {
   constructor(
@@ -11,9 +14,9 @@ export class ApiError extends Error {
 }
 
 /**
- * Server-only fetch against `mb-api`. Every caller of this file is a
+ * Server-only fetch against `pch-api`. Every caller of this file is a
  * Server Component or Server Action — nothing in `ui` ever calls the Rust
- * API from the browser, which is what lets `mb-api` skip CORS entirely.
+ * API from the browser, which is what lets `pch-api` skip CORS entirely.
  */
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T | null> {
   const res = await fetch(`${API_URL}${path}`, {

@@ -1,5 +1,5 @@
 [package]
-name = "mb-templates"
+name = "pch-templates"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

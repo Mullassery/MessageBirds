@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import type { Node, Trigger } from "@messagebirds/sdk";
+import type { Node, Trigger } from "@pycustomerhub/sdk";
 import { apiFetch, ApiError } from "@/lib/api";
 
 export async function createJourney(formData: FormData) {

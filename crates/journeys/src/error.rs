@@ -13,13 +13,13 @@ pub enum JourneyError {
     #[error("stored journey nodes failed to deserialize: {0}")]
     Corrupt(#[from] serde_json::Error),
     #[error(transparent)]
-    Audience(#[from] mb_audiences::AudienceError),
+    Audience(#[from] pch_audiences::AudienceError),
     #[error(transparent)]
-    Profile(#[from] mb_profile::ProfileError),
+    Profile(#[from] pch_profile::ProfileError),
     #[error(transparent)]
-    Template(#[from] mb_templates::TemplateError),
+    Template(#[from] pch_templates::TemplateError),
     #[error(transparent)]
-    Channel(#[from] mb_channels::ChannelRepoError),
+    Channel(#[from] pch_channels::ChannelRepoError),
     #[error(transparent)]
     Db(#[from] sqlx::Error),
 }

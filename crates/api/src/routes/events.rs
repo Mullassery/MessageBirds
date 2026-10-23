@@ -2,7 +2,7 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::Json;
 use chrono::{DateTime, Utc};
-use mb_core::EventEnvelope;
+use pch_core::EventEnvelope;
 use serde::Serialize;
 use serde_json::json;
 use uuid::Uuid;
@@ -24,7 +24,7 @@ pub async fn post_event(
 
     state
         .producer
-        .publish(mb_events::RAW_EVENTS_TOPIC, &envelope)
+        .publish(pch_events::RAW_EVENTS_TOPIC, &envelope)
         .await?;
 
     Ok((

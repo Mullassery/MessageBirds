@@ -17,8 +17,8 @@ pub struct HubspotConnector {
 impl HubspotConnector {
     pub fn new() -> Self {
         let builder = reqwest::Client::builder().timeout(Duration::from_secs(15));
-        let builder = if mb_net_guard::guard_enabled() {
-            mb_net_guard::harden_client(builder)
+        let builder = if pch_net_guard::guard_enabled() {
+            pch_net_guard::harden_client(builder)
         } else {
             builder
         };
@@ -67,7 +67,7 @@ impl DestinationConnector for HubspotConnector {
             properties.insert("phone".into(), json!(value));
         }
 
-        let url = mb_net_guard::validate_outbound_url(&format!(
+        let url = pch_net_guard::validate_outbound_url(&format!(
             "{base_url}/crm/v3/objects/contacts/batch/upsert"
         ))
         .map_err(|e| ConnectorError::UnsafeUrl(e.to_string()))?;

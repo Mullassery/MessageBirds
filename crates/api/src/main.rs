@@ -1,25 +1,27 @@
 mod auth;
 mod error;
+mod http_source;
 mod labels;
 mod routes;
+mod squid_source;
 mod state;
 
 use std::sync::Arc;
 
 use sqlx::postgres::PgPoolOptions;
 
-use mb_audiences::PgAudienceRepo;
-use mb_channels::{PgChannelRepo, WebhookChannelAdapter};
-use mb_connectors::{HubspotConnector, KlaviyoConnector, PgConnectorRepo, WebhookConnector};
-use mb_events::EventProducer;
-use mb_governance::PgGovernanceRepo;
-use mb_identity::PgIdentityRepo;
-use mb_journeys::{Engine as JourneyEngine, PgJourneyRepo};
-use mb_mixins::PgMixinRepo;
-use mb_namespaces::PgNamespaceRepo;
-use mb_profile::PgProfileRepo;
-use mb_schema_registry::PgSchemaRepo;
-use mb_templates::PgTemplateRepo;
+use pch_audiences::PgAudienceRepo;
+use pch_channels::{PgChannelRepo, WebhookChannelAdapter};
+use pch_connectors::{HubspotConnector, KlaviyoConnector, PgConnectorRepo, WebhookConnector};
+use pch_events::EventProducer;
+use pch_governance::PgGovernanceRepo;
+use pch_identity::PgIdentityRepo;
+use pch_journeys::{Engine as JourneyEngine, PgJourneyRepo};
+use pch_mixins::PgMixinRepo;
+use pch_namespaces::PgNamespaceRepo;
+use pch_profile::PgProfileRepo;
+use pch_schema_registry::PgSchemaRepo;
+use pch_templates::PgTemplateRepo;
 
 use state::AppState;
 
@@ -28,7 +30,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
-        "postgres://messagebirds:messagebirds@localhost:5432/messagebirds".into()
+        "postgres://pycustomerhub:pycustomerhub@localhost:5432/pycustomerhub".into()
     });
     let kafka_brokers = std::env::var("KAFKA_BROKERS").unwrap_or_else(|_| "localhost:9092".into());
     let port: u16 = std::env::var("PORT")
@@ -73,6 +75,8 @@ async fn main() -> anyhow::Result<()> {
             },
         )),
         auth: auth::ApiKeyAuth::from_env(),
+        http_write_keys: http_source::HttpWriteKeys::from_env(),
+        squid_workspaces: squid_source::SquidWorkspaces::from_env(),
     };
 
     let app = routes::router(state);
@@ -82,7 +86,8 @@ async fn main() -> anyhow::Result<()> {
     // tenant's data to anyone who can reach the port. Operators who really
     // need that (e.g. behind an authenticating proxy or in a trusted
     // network) must opt in explicitly.
-    let allow_non_loopback = std::env::var("MESSAGEBIRDS_ALLOW_NON_LOOPBACK")
+    let allow_non_loopback = std::env::var("PYCUSTOMERHUB_ALLOW_NON_LOOPBACK")
+        .or_else(|_| std::env::var("MESSAGEBIRDS_ALLOW_NON_LOOPBACK"))
         .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
         .unwrap_or(false);
     let bind_host = if allow_non_loopback {
@@ -95,7 +100,7 @@ async fn main() -> anyhow::Result<()> {
     if !allow_non_loopback {
         tracing::warn!(
             "API is bound to loopback only and enforces no auth; \
-             set MESSAGEBIRDS_ALLOW_NON_LOOPBACK=1 to expose it"
+             set PYCUSTOMERHUB_ALLOW_NON_LOOPBACK=1 to expose it"
         );
     }
     axum::serve(listener, app).await?;

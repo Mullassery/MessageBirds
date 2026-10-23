@@ -1,12 +1,12 @@
 [package]
-name = "mb-profile"
+name = "pch-profile"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [dependencies]
-mb-merge-policy.workspace = true
+pch-merge-policy.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 uuid.workspace = true

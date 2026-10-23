@@ -1,10 +1,10 @@
 import Foundation
 import Testing
-@testable import MessageBirdsAnalytics
+@testable import PyCustomerHubAnalytics
 
 struct EventQueueTests {
     private func tempFileURL() -> URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("mb-queue-\(UUID().uuidString).json")
+        FileManager.default.temporaryDirectory.appendingPathComponent("pch-queue-\(UUID().uuidString).json")
     }
 
     private func envelope(_ id: String) -> EventEnvelope {

@@ -1,27 +1,30 @@
-# messagebirds
+# pycustomerhub
 
-Python client SDK for [MessageBirds](https://github.com/Mullassery/MessageBirds), an
+Python client SDK for [PyCustomerHub](https://github.com/Mullassery/PyCustomerHub), an
 open-source, event-driven Customer Data & Engagement Platform.
 
-Mirrors `sdk/js` exactly in scope: `MessageBirdsClient` covers the core
+Mirrors `sdk/js` exactly in scope: `PyCustomerHubClient` covers the core
 send-an-event / read-a-profile loop (the same three methods the TS client
 exposes), not one method per API endpoint. Everything else — audiences,
-governance, channels, templates, journeys — is typed in `messagebirds.types`
+governance, channels, templates, journeys — is typed in `pycustomerhub.types`
 for use with your own `requests` calls against the REST API, the same role
 `apiFetch<T>` plays against the TS types for `ui/`.
 
 ## Install
 
 ```bash
-pip install messagebirds
+pip install pycustomerhub
 ```
+
+The pre-rebrand `messagebirds` import still works through a deprecated
+compatibility shim.
 
 ## Usage
 
 ```python
-from messagebirds import MessageBirdsClient, EventEnvelope
+from pycustomerhub import PyCustomerHubClient, EventEnvelope
 
-client = MessageBirdsClient("http://localhost:8080")
+client = PyCustomerHubClient("http://localhost:8080")
 
 envelope: EventEnvelope = {
     "event_id": "...",

@@ -9,7 +9,7 @@ pub const WEBHOOK_KIND: &str = "webhook";
 /// implemented (`WebhookChannelAdapter`): a real SES/Twilio/etc. adapter
 /// needs credentials this environment doesn't have, so for now every
 /// channel kind is simulated by POSTing to a configured URL, the same
-/// honest stand-in pattern as `mb-connectors`' one webhook destination.
+/// honest stand-in pattern as `pch-connectors`' one webhook destination.
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Channel {
     pub id: Uuid,
@@ -20,8 +20,8 @@ pub struct Channel {
     pub created_at: DateTime<Utc>,
 }
 
-/// What actually gets sent — rendered by `mb-templates::render`, decoupled
-/// from it here so `mb-channels` doesn't need to depend on that crate.
+/// What actually gets sent — rendered by `pch-templates::render`, decoupled
+/// from it here so `pch-channels` doesn't need to depend on that crate.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RenderedMessage {
     pub subject: Option<String>,

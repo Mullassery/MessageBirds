@@ -1,10 +1,10 @@
 [package]
-name = "mb-net-guard"
+name = "pch-net-guard"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Outbound-request SSRF guard shared by MessageBirds webhook transports"
+description = "Outbound-request SSRF guard shared by PyCustomerHub webhook transports"
 
 [dependencies]
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

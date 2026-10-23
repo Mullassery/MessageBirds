@@ -1,4 +1,4 @@
-import type { JourneyDefinition } from "@messagebirds/sdk";
+import type { JourneyDefinition } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 import { createJourney } from "./actions";
 

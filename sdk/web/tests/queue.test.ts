@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { EventEnvelope } from "@messagebirds/sdk";
-import { EventQueue } from "../src/queue.js";
+import type { EventEnvelope } from "@pycustomerhub/sdk";
+import { EventQueue, LEGACY_QUEUE_STORAGE_KEY, QUEUE_STORAGE_KEY } from "../src/queue.js";
 import { InMemoryStorage } from "../src/memory-storage.js";
 
 function envelope(id: string): EventEnvelope {
@@ -25,7 +25,7 @@ describe("EventQueue", () => {
     await queue.flush();
 
     expect(send).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(storage.getItem("messagebirds:queue")!)).toEqual([]);
+    expect(JSON.parse(storage.getItem(QUEUE_STORAGE_KEY)!)).toEqual([]);
   });
 
   it("sends events in order and stops at every currently-persisted item once each succeeds", async () => {
@@ -59,9 +59,25 @@ describe("EventQueue", () => {
     await queue.flush();
 
     expect(send).toHaveBeenCalledTimes(2); // never attempted c
-    const remaining = JSON.parse(storage.getItem("messagebirds:queue")!);
+    const remaining = JSON.parse(storage.getItem(QUEUE_STORAGE_KEY)!);
     expect(remaining.map((i: { envelope: EventEnvelope }) => i.envelope.event_id)).toEqual(["b", "c"]);
     expect(remaining[0].attempts).toBe(1);
+  });
+
+  it("migrates queued events from the pre-rebrand storage key", async () => {
+    const storage = new InMemoryStorage();
+    const send = vi.fn().mockResolvedValue(true);
+    const queue = new EventQueue(storage, send);
+    storage.setItem(
+      LEGACY_QUEUE_STORAGE_KEY,
+      JSON.stringify([{ envelope: envelope("legacy"), attempts: 0 }]),
+    );
+
+    await queue.flush();
+
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(storage.getItem(QUEUE_STORAGE_KEY)!)).toEqual([]);
+    expect(JSON.parse(storage.getItem(LEGACY_QUEUE_STORAGE_KEY)!)).toEqual([]);
   });
 
   it("does not retry again before the backoff window elapses", async () => {
@@ -92,6 +108,6 @@ describe("EventQueue", () => {
 
     expect(dropped).toHaveLength(1);
     expect(dropped[0].event_id).toBe("a");
-    expect(JSON.parse(storage.getItem("messagebirds:queue")!)).toEqual([]);
+    expect(JSON.parse(storage.getItem(QUEUE_STORAGE_KEY)!)).toEqual([]);
   });
 });

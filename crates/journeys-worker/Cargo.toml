@@ -1,5 +1,5 @@
 [package]
-name = "mb-journeys-worker"
+name = "pch-journeys-worker"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -10,10 +10,10 @@ name = "journeys-worker"
 path = "src/main.rs"
 
 [dependencies]
-mb-channels.workspace = true
-mb-journeys.workspace = true
-mb-profile.workspace = true
-mb-templates.workspace = true
+pch-channels.workspace = true
+pch-journeys.workspace = true
+pch-profile.workspace = true
+pch-templates.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
 tracing.workspace = true

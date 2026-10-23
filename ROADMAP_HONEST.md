@@ -18,7 +18,7 @@ relevant source (not by re-reading old docs). Commands and results are in the se
 - `edge/ingest-gateway` — `tsc --noEmit` clean, `vitest run`: 8/8 tests passed.
 - `sdk/python` — `pytest sdk/python`: 6/6 tests passed (Python 3.11 venv, editable install).
 - `ui/` (Next.js) — `tsc --noEmit` clean, `next build` succeeds, all 13 routes compile.
-- `sdk/ios` — `swift build` and `swift run mb-verify` both pass (4/4 assertions in the verify CLI). `swift test` fails on this machine with `error: no such module 'Testing'` — confirmed this is a real environment limitation (only Xcode Command Line Tools installed, not full Xcode.app), not a code problem; the CI workflow (`.github/workflows/ci.yml`, `ios-sdk` job) runs on `macos-15` with `maxim-lobanov/setup-xcode@v1` pinned to `latest-stable`, which is the only place `Tests/MessageBirdsAnalyticsTests` has ever actually executed.
+- `sdk/ios` — `swift build` and `swift run pch-verify` both pass (4/4 assertions in the verify CLI). `swift test` fails on this machine with `error: no such module 'Testing'` — confirmed this is a real environment limitation (only Xcode Command Line Tools installed, not full Xcode.app), not a code problem; the CI workflow (`.github/workflows/ci.yml`, `ios-sdk` job) runs on `macos-15` with `maxim-lobanov/setup-xcode@v1` pinned to `latest-stable`, which is the only place `Tests/PyCustomerHubAnalyticsTests` has ever actually executed.
 
 ### 2. Shipped, honestly disclosed as unverified or not deployed (docs/ARCHITECTURE.md already says this — confirmed still true)
 - `sdk/android` — written against real Kotlin/Android APIs, never compiled. Confirmed again this pass: `gradle`, `kotlinc`, `adb` are all absent from this machine too, so this is still a real, standing gap, not a stale claim.
@@ -43,7 +43,7 @@ npm exec --workspace=sdk/web -- tsc --noEmit && npm run test --workspace=sdk/web
 npm run typecheck --workspace=edge/ingest-gateway && npm run test --workspace=edge/ingest-gateway  # clean, 8/8
 npm exec --workspace=ui -- tsc --noEmit && npm run build --workspace=ui            # clean, builds
 pip install -e "./sdk/python[dev]" && pytest sdk/python        # 6/6 passed
-cd sdk/ios && swift build && swift run mb-verify               # both pass
+cd sdk/ios && swift build && swift run pch-verify               # both pass
 cd sdk/ios && swift test                                       # fails locally: no `Testing` module (CLT-only machine, expected)
 npm audit                                                       # 0 vulnerabilities
 pip-audit (against sdk/python's declared deps)                 # 0 known vulnerabilities
@@ -78,7 +78,7 @@ actionlint .github/workflows/ci.yml                             # clean
    pulls in `paste` at all. No action needed.
 4. **Unsalted, deterministic PII hashing for identity matching — partially fixed 2026-09-22.**
    `crates/identity/src/hash.rs`'s `hash_value` now mixes in an optional per-deployment pepper
-   read from the `MB_IDENTITY_HASH_PEPPER` environment variable:
+   read from the `PYCUSTOMERHUB_IDENTITY_HASH_PEPPER` environment variable:
    `SHA-256(pepper || ":" || namespace || ":" || value)` when the pepper is set, falling back to
    the original byte-for-byte `SHA-256(namespace || ":" || value)` when it's unset (so existing
    unconfigured deployments keep matching every hash they've already written — no forced
@@ -93,21 +93,21 @@ actionlint .github/workflows/ci.yml                             # clean
    re-hash migration, not implemented here, would be needed). Tests added in
    `crates/identity/src/hash.rs`.
 5. **API keys + optional forward-auth SSO; not full RBAC.**
-   `MESSAGEBIRDS_API_KEYS` supports `read_only`, `writer`, and `admin`.
-   `MESSAGEBIRDS_TRUST_PROXY_AUTH=1` trusts `X-Auth-Request-*` headers from an
+   `PYCUSTOMERHUB_API_KEYS` supports `read_only`, `writer`, and `admin`.
+   `PYCUSTOMERHUB_TRUST_PROXY_AUTH=1` trusts `X-Auth-Request-*` headers from an
    authenticating proxy (which must strip client headers). Tenant mismatches
-   return 403. The older single-key `MESSAGEBIRDS_API_KEY` (+ `_TENANT`) is an admin
+   return 403. The older single-key `PYCUSTOMERHUB_API_KEY` (+ `_TENANT`) is an admin
    key. There is still no login/session or SSO, and a key without a tenant
    binding is not tenant-scoped. When unset, behaviour is unchanged for local
    dev.
-6. **`edge/ingest-gateway` has no write-key/API-key check.** Confirmed by reading `edge/ingest-gateway/src/`: it validates CORS and envelope shape only, then forwards straight to `mb-api`. Combined with finding 5, there is currently no credential anywhere in the request path from a browser to Postgres. Already disclosed in `docs/ARCHITECTURE.md`; also not deployed (`wrangler deploy` has never been run), which limits current exposure to zero in practice.
+6. **`edge/ingest-gateway` has no write-key/API-key check.** Confirmed by reading `edge/ingest-gateway/src/`: it validates CORS and envelope shape only, then forwards straight to `pch-api`. Combined with finding 5, there is currently no credential anywhere in the request path from a browser to Postgres. Already disclosed in `docs/ARCHITECTURE.md`; also not deployed (`wrangler deploy` has never been run), which limits current exposure to zero in practice.
 7. **No SQL injection found.** I audited every `sqlx::query_as(&format!(...))` call (33 call sites across `crates/audiences`, `crates/channels`, `crates/governance`, `crates/journeys`, `crates/templates` — e.g. `crates/audiences/src/repo.rs:91-97`) because dynamic query-string construction is the classic injection smell. In every case the `format!` interpolates only a compile-time `const` column list (e.g. `AUDIENCE_COLUMNS` at `crates/audiences/src/repo.rs:71`); every actual value is passed through `.bind()` with numbered placeholders. This pattern is safe as used, just worth someone re-checking if a new call site copies the pattern carelessly.
-8. **No secrets found committed.** Searched for API keys, passwords, tokens, private keys, `.env` files, and credential-shaped files across the tree (excluding `node_modules`/`target`/`.build`). The only credential-shaped string is the local dev Postgres password (`messagebirds`/`messagebirds`) in `docker-compose.yml`, which matches the `DATABASE_URL` already printed in `README.md`'s own quick-start — a conventional, low-stakes local-dev-only credential, not a leaked production secret.
+8. **No secrets found committed.** Searched for API keys, passwords, tokens, private keys, `.env` files, and credential-shaped files across the tree (excluding `node_modules`/`target`/`.build`). The only credential-shaped string is the local dev Postgres password (`pycustomerhub`/`pycustomerhub`) in `docker-compose.yml`, which matches the `DATABASE_URL` already printed in `README.md`'s own quick-start — a conventional, low-stakes local-dev-only credential, not a leaked production secret.
 
 ## Technical debt (concrete, file:line)
 
 **Needs a dedicated follow-up session:**
-- No authentication/authorization layer at all in `mb-api` (see Security #5). This is the biggest single piece of real work left before this could touch real customer data.
+- No authentication/authorization layer at all in `pch-api` (see Security #5). This is the biggest single piece of real work left before this could touch real customer data.
 - `sdk/android` is unverified (no build environment available in two separate sessions now, including this one). Needs a machine with Gradle/Android SDK to even discover whether it compiles.
 - A re-hash migration for `crates/identity/src/hash.rs`'s pepper (Security #4): the pepper support added 2026-09-22 is opt-in via env var and doesn't retroactively re-hash existing data — a deployment that wants to turn it on after already having identity data needs a migration tool that doesn't exist yet.
 - Making the identity-hash pepper mandatory/enforced (rather than silently falling back to unsalted) is a real product decision (breaks any deployment that hasn't set it) and deliberately wasn't done unilaterally in this pass.
@@ -126,7 +126,7 @@ actionlint .github/workflows/ci.yml                             # clean
 
 ## What I deliberately did not do this pass
 
-- Did not build an authentication/tenant-isolation layer for `mb-api`, add write-key auth to
+- Did not build an authentication/tenant-isolation layer for `pch-api`, add write-key auth to
   `edge/ingest-gateway`, or enforce the identity-hash pepper (make it mandatory rather than
   opt-in) — all real feature work, out of scope for a quick-fix pass.
 - Did not write a re-hash migration tool for existing identity data when the pepper is turned on

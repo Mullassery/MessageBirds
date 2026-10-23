@@ -1,8 +1,11 @@
-name = "messagebirds-ingest-gateway"
+name = "pycustomerhub-ingest-gateway"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
 [vars]
-# Points at plain `mb-api` for local dev; override for a real deployment
+# Points at plain `pch-api` for local dev; override for a real deployment
 # (not done this phase — see docs/ARCHITECTURE.md).
-MESSAGEBIRDS_API_URL = "http://localhost:8080"
+PYCUSTOMERHUB_API_URL = "http://localhost:8080"
+# Required for ingestion. Set a JSON object mapping write keys to tenant UUIDs:
+# PYCUSTOMERHUB_EDGE_WRITE_KEYS = '{"wk_live_123":"<tenant-uuid>"}'
+# The gateway fails closed when this binding is absent.

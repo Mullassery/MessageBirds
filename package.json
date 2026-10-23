@@ -1,5 +1,5 @@
 {
-  "name": "messagebirds",
+  "name": "pycustomerhub",
   "private": true,
   "workspaces": [
     "sdk/js",

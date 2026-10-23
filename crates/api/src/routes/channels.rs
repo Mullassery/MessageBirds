@@ -4,7 +4,7 @@ use axum::Json;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use mb_channels::{Channel, ChannelRepo};
+use pch_channels::{Channel, ChannelRepo};
 
 use crate::error::ApiError;
 use crate::routes::audiences::TenantQuery;

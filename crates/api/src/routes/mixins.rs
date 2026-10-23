@@ -4,8 +4,8 @@ use axum::Json;
 use serde::Deserialize;
 use std::collections::BTreeMap;
 
-use mb_mixins::{MixinDef, MixinRepo};
-use mb_schema_registry::FieldDef;
+use pch_mixins::{MixinDef, MixinRepo};
+use pch_schema_registry::FieldDef;
 
 use crate::error::ApiError;
 use crate::state::AppState;

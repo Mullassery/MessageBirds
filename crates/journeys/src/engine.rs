@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use chrono::Utc;
-use mb_audiences::evaluate_condition;
-use mb_channels::{ChannelAdapter, ChannelRepo, RenderedMessage};
-use mb_profile::ProfileRepo;
-use mb_templates::TemplateRepo;
+use pch_audiences::evaluate_condition;
+use pch_channels::{ChannelAdapter, ChannelRepo, RenderedMessage};
+use pch_profile::ProfileRepo;
+use pch_templates::TemplateRepo;
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -145,7 +145,7 @@ impl Engine {
             .await?
             .ok_or(JourneyError::ProfileNotFound(run.profile_id))?;
         let template = self.templates.get(run.tenant_id, template_id).await?;
-        let rendered = mb_templates::render(&template, &profile.mixins);
+        let rendered = pch_templates::render(&template, &profile.mixins);
         let channel = self.channels.get(run.tenant_id, channel_id).await?;
 
         if self

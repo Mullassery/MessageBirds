@@ -17,11 +17,21 @@ use axum::routing::{get, post};
 use axum::Router;
 
 use crate::auth;
+use crate::http_source;
+use crate::squid_source;
 use crate::state::AppState;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/healthz", get(health::healthz))
+        .route("/v1/squid", post(squid_source::webhook))
+        .route("/v1/track", post(http_source::track))
+        .route("/v1/identify", post(http_source::identify))
+        .route("/v1/page", post(http_source::page))
+        .route("/v1/screen", post(http_source::screen))
+        .route("/v1/group", post(http_source::group))
+        .route("/v1/alias", post(http_source::alias))
+        .route("/v1/batch", post(http_source::batch))
         .route("/events", post(events::post_event))
         .route("/events/:id", get(events::get_event))
         .route(

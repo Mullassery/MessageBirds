@@ -1,4 +1,4 @@
-use mb_merge_policy::{apply_policy, FieldCandidate, MergePolicy, MergePolicyError};
+use pch_merge_policy::{apply_policy, FieldCandidate, MergePolicy, MergePolicyError};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Decision {
@@ -31,7 +31,7 @@ pub fn decide(
 mod tests {
     use super::*;
     use chrono::{Duration, Utc};
-    use mb_merge_policy::Strategy;
+    use pch_merge_policy::Strategy;
     use uuid::Uuid;
 
     fn policy() -> MergePolicy {

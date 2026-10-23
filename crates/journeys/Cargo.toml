@@ -1,15 +1,15 @@
 [package]
-name = "mb-journeys"
+name = "pch-journeys"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [dependencies]
-mb-audiences.workspace = true
-mb-channels.workspace = true
-mb-templates.workspace = true
-mb-profile.workspace = true
+pch-audiences.workspace = true
+pch-channels.workspace = true
+pch-templates.workspace = true
+pch-profile.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 uuid.workspace = true

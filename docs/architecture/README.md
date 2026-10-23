@@ -20,14 +20,14 @@ flowchart TD
 
     Gateway["edge/ingest-gateway<br/>(Cloudflare Worker)<br/>CORS + shape check<br/>NOT deployed, no auth"]
 
-    subgraph mb-api ["mb-api (Axum, no auth layer)"]
+    subgraph pch-api ["pch-api (Axum, no auth layer)"]
         PostEvents["POST /events"]
         QueryEP["GET /profiles, /events, /schemas, ..."]
     end
 
     Kafka[("Kafka / Redpanda<br/>events.raw")]
 
-    subgraph mb-worker ["mb-worker pipeline"]
+    subgraph pch-worker ["pch-worker pipeline"]
         SchemaVal["schema-registry:<br/>validate against registered schema"]
         Identity["identity:<br/>resolve claims, mint/merge profile id<br/>(SHA-256 hashed claims, unsalted)"]
         MergePolicy["merge-policy:<br/>conflict resolution"]
@@ -43,11 +43,11 @@ flowchart TD
         Governance["governance:<br/>label policy + consent check<br/>per profile"]
         Webhook["connectors: webhook<br/>(one real transport)"]
         ReverseETL["PyReverseETL bulk sync<br/>(consent checked, label policy NOT re-run)"]
-        JourneyWorker["mb-journeys-worker<br/>poller: advances due runs,<br/>survives restart mid-Wait"]
+        JourneyWorker["pch-journeys-worker<br/>poller: advances due runs,<br/>survives restart mid-Wait"]
         Channel["channels: webhook<br/>(only real transport)"]
     end
 
-    UI["ui/ (Next.js)<br/>Server Components only<br/>no browser calls to mb-api"]
+    UI["ui/ (Next.js)<br/>Server Components only<br/>no browser calls to pch-api"]
 
     WebSDK -->|POST /events| Gateway
     IosSDK -->|POST /events| Gateway
@@ -79,16 +79,16 @@ flowchart TD
 label text ("NOT deployed", "unverified", "NOT re-run") are disclosed gaps, not implied failures —
 cross-reference `docs/ARCHITECTURE.md`'s "What's explicitly NOT built yet" section and
 `ROADMAP_HONEST.md`'s security findings for what each one means in practice. In particular: there
-is no authentication anywhere on the `mb-api` box, and `tenant_id` isolation is enforced only by
+is no authentication anywhere on the `pch-api` box, and `tenant_id` isolation is enforced only by
 application-level query filtering, not a database or gateway-level boundary — see `SECURITY.md`.
 
 ## Journey durability (Phase 5, verified by restart test)
 
 ```mermaid
 sequenceDiagram
-    participant W as mb-worker
+    participant W as pch-worker
     participant DB as Postgres (journey_runs)
-    participant JW as mb-journeys-worker (poller)
+    participant JW as pch-journeys-worker (poller)
     participant Ch as Webhook listener
 
     W->>DB: Audience membership Entered -> start run (Wait node, wake_at=T+5m)

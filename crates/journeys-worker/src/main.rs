@@ -3,15 +3,15 @@ use std::time::Duration;
 
 use sqlx::postgres::PgPoolOptions;
 
-use mb_channels::{PgChannelRepo, WebhookChannelAdapter};
-use mb_journeys::{Engine, JourneyRepo, PgJourneyRepo};
-use mb_profile::PgProfileRepo;
-use mb_templates::PgTemplateRepo;
+use pch_channels::{PgChannelRepo, WebhookChannelAdapter};
+use pch_journeys::{Engine, JourneyRepo, PgJourneyRepo};
+use pch_profile::PgProfileRepo;
+use pch_templates::PgTemplateRepo;
 
 /// A dedicated poll loop — a separate process from `api`/`worker`, since
 /// journey advancement is time-driven (`Wait` nodes) independent of Kafka
 /// arrivals. Durability comes from `journey_runs` being fully persisted
-/// after every transition (see `mb_journeys::Engine`), not from this
+/// after every transition (see `pch_journeys::Engine`), not from this
 /// process staying alive — killing and restarting it mid-run resumes
 /// correctly.
 #[tokio::main]
@@ -19,7 +19,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
-        "postgres://messagebirds:messagebirds@localhost:5432/messagebirds".into()
+        "postgres://pycustomerhub:pycustomerhub@localhost:5432/pycustomerhub".into()
     });
     let poll_interval_ms: u64 = std::env::var("JOURNEYS_POLL_INTERVAL_MS")
         .ok()

@@ -1,14 +1,14 @@
 import Foundation
 import Testing
-@testable import MessageBirdsAnalytics
+@testable import PyCustomerHubAnalytics
 
-struct MessageBirdsAnalyticsTests {
+struct PyCustomerHubAnalyticsTests {
     private func tempFileURL() -> URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("mb-client-queue-\(UUID().uuidString).json")
+        FileManager.default.temporaryDirectory.appendingPathComponent("pch-client-queue-\(UUID().uuidString).json")
     }
 
     private func tempDefaults() -> UserDefaults {
-        UserDefaults(suiteName: "mb-test-\(UUID().uuidString)")!
+        UserDefaults(suiteName: "pch-test-\(UUID().uuidString)")!
     }
 
     @Test func trackPostsARenderedEnvelopeToEventsEndpoint() async throws {
@@ -20,7 +20,7 @@ struct MessageBirdsAnalyticsTests {
             return (200, Data(#"{"event_id":"ignored"}"#.utf8))
         }
 
-        let analytics = MessageBirdsAnalytics(
+        let analytics = PyCustomerHubAnalytics(
             writeKey: "tenant-1",
             apiUrl: "http://localhost:8080",
             queueFileURL: tempFileURL(),
@@ -46,18 +46,18 @@ struct MessageBirdsAnalyticsTests {
         let defaults = tempDefaults()
         let fileURL = tempFileURL()
 
-        let first = MessageBirdsAnalytics(
+        let first = PyCustomerHubAnalytics(
             writeKey: "tenant-1", apiUrl: "http://localhost:8080",
             queueFileURL: fileURL, session: MockURLProtocol.makeSession(), defaults: defaults
         )
-        let second = MessageBirdsAnalytics(
+        let second = PyCustomerHubAnalytics(
             writeKey: "tenant-1", apiUrl: "http://localhost:8080",
             queueFileURL: fileURL, session: MockURLProtocol.makeSession(), defaults: defaults
         )
 
         // Both read/write the same UserDefaults suite, so the id minted by
         // `first`'s init must be the one `second` reads back.
-        #expect(defaults.string(forKey: "messagebirds.anonymous_id")?.isEmpty == false)
+        #expect(defaults.string(forKey: "pycustomerhub.anonymous_id")?.isEmpty == false)
         _ = first
         _ = second
     }

@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use chrono::Utc;
-use mb_merge_policy::{FieldCandidate, MergePolicy};
+use pch_merge_policy::{FieldCandidate, MergePolicy};
 use sqlx::PgPool;
 use thiserror::Error;
 use uuid::Uuid;
@@ -13,7 +13,7 @@ pub enum ProfileError {
     #[error("mixin update payload must be a JSON object")]
     NotAnObject,
     #[error(transparent)]
-    MergePolicy(#[from] mb_merge_policy::MergePolicyError),
+    MergePolicy(#[from] pch_merge_policy::MergePolicyError),
     #[error(transparent)]
     Db(#[from] sqlx::Error),
 }

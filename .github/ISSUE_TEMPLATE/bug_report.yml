@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Thanks for filing a bug. Please **do not** use this form for security vulnerabilities —
-        see [SECURITY.md](https://github.com/Mullassery/MessageBirds/blob/main/SECURITY.md)
+        see [SECURITY.md](https://github.com/Mullassery/PyCustomerHub/blob/main/SECURITY.md)
         instead.
   - type: dropdown
     id: component
@@ -49,7 +49,7 @@ body:
     id: repro
     attributes:
       label: Steps to reproduce
-      description: Include exact commands run (e.g. `cargo test -p mb-journeys`, `npm run test --workspace=sdk/web`).
+      description: Include exact commands run (e.g. `cargo test -p pch-journeys`, `npm run test --workspace=sdk/web`).
       placeholder: |
         1.
         2.

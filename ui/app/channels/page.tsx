@@ -1,4 +1,4 @@
-import type { Channel } from "@messagebirds/sdk";
+import type { Channel } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 import { createChannel } from "./actions";
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import type { ProfileView } from "@messagebirds/sdk";
+import type { ProfileView } from "@pycustomerhub/sdk";
 import { apiFetch, ApiError } from "@/lib/api";
 
 export async function lookupProfile(formData: FormData) {

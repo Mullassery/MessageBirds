@@ -26,7 +26,7 @@ pub trait TemplateRepo: Send + Sync {
         body: String,
     ) -> Result<MessageTemplate, TemplateError>;
 
-    /// Look up by id — what `mb-journeys` Action nodes pin to, since a
+    /// Look up by id — what `pch-journeys` Action nodes pin to, since a
     /// journey should keep using the exact template version it was
     /// authored against.
     async fn get(&self, tenant_id: Uuid, id: Uuid) -> Result<MessageTemplate, TemplateError>;

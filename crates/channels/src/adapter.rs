@@ -38,8 +38,8 @@ impl WebhookChannelAdapter {
         let builder = reqwest::Client::builder().timeout(Duration::from_secs(10));
         // Tenant-configured URLs are untrusted; refuse private/loopback/
         // link-local targets unless explicitly opted out.
-        let builder = if mb_net_guard::guard_enabled() {
-            mb_net_guard::harden_client(builder)
+        let builder = if pch_net_guard::guard_enabled() {
+            pch_net_guard::harden_client(builder)
         } else {
             builder
         };
@@ -68,7 +68,7 @@ impl ChannelAdapter for WebhookChannelAdapter {
             .get("url")
             .and_then(|v| v.as_str())
             .ok_or(ChannelError::InvalidConfig("url"))?;
-        let url = mb_net_guard::validate_outbound_url(raw_url)
+        let url = pch_net_guard::validate_outbound_url(raw_url)
             .map_err(|e| ChannelError::UnsafeUrl(e.to_string()))?;
 
         let response = self.client.post(url).json(message).send().await?;

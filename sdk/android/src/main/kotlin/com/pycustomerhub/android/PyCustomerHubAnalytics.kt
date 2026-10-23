@@ -1,4 +1,4 @@
-package com.messagebirds.android
+package com.pycustomerhub.android
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -11,16 +11,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-private const val PREFS_NAME = "messagebirds"
+private const val PREFS_NAME = "pycustomerhub"
+private const val LEGACY_PREFS_NAME = "messagebirds"
 private const val ANONYMOUS_ID_KEY = "anonymous_id"
 
 /**
  * Real event collector for Android, mirroring `sdk/web`'s
- * `MessageBirdsWebAnalytics` and `sdk/ios`'s `MessageBirdsAnalytics`:
- * queue-and-retry over `POST /events` (no batch endpoint exists to send
- * a batch to), one real HTTP call per event via `HttpURLConnection` (no
- * OkHttp dependency — keeps this module dependency-free beyond Kotlin
- * stdlib + coroutines).
+ * `PyCustomerHubWebAnalytics` and `sdk/ios`'s `PyCustomerHubAnalytics`:
+ * queue-and-retry over `POST /events`, one real HTTP call per event via
+ * `HttpURLConnection` (no OkHttp dependency — keeps this module
+ * dependency-free beyond Kotlin stdlib + coroutines).
  *
  * NOTE ON VERIFICATION: this file is written against real, standard
  * Android/Kotlin APIs, but this environment has no `gradle`/`kotlinc`/
@@ -30,7 +30,7 @@ private const val ANONYMOUS_ID_KEY = "anonymous_id"
  * `sdk/android/README.md`) in an environment with the Android SDK before
  * relying on it.
  */
-class MessageBirdsAnalytics(
+class PyCustomerHubAnalytics(
     context: Context,
     private val tenantId: String,
     private val apiUrl: String,
@@ -38,8 +38,10 @@ class MessageBirdsAnalytics(
     queueFile: File? = null,
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE),
 ) {
+    private val legacyPrefs: SharedPreferences =
+        context.getSharedPreferences(LEGACY_PREFS_NAME, Context.MODE_PRIVATE)
     private val queue = EventQueue(
-        queueFile ?: File(context.filesDir, "messagebirds-queue.json"),
+        queueFile ?: defaultQueueFile(context),
         ::sendOnce,
     )
     private val anonymousId: String = loadOrCreateAnonymousId()
@@ -78,7 +80,7 @@ class MessageBirdsAnalytics(
     }
 
     suspend fun flush(): Boolean = queue.flush { dropped ->
-        android.util.Log.w("messagebirds", "dropped event ${dropped.eventId} after repeated failures")
+        android.util.Log.w("pycustomerhub", "dropped event ${dropped.eventId} after repeated failures")
     }
 
     private fun sendOnce(envelope: EventEnvelope): Boolean {
@@ -99,8 +101,21 @@ class MessageBirdsAnalytics(
 
     private fun loadOrCreateAnonymousId(): String {
         prefs.getString(ANONYMOUS_ID_KEY, null)?.let { return it }
+        legacyPrefs.getString(ANONYMOUS_ID_KEY, null)?.let {
+            prefs.edit().putString(ANONYMOUS_ID_KEY, it).apply()
+            return it
+        }
         val id = "anon-${UUID.randomUUID()}"
         prefs.edit().putString(ANONYMOUS_ID_KEY, id).apply()
         return id
     }
+}
+
+private fun defaultQueueFile(context: Context): File {
+    val current = File(context.filesDir, "pycustomerhub-queue.json")
+    val legacy = File(context.filesDir, "messagebirds-queue.json")
+    if (!current.exists() && legacy.exists()) {
+        legacy.renameTo(current)
+    }
+    return current
 }

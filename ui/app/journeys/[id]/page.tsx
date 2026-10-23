@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import type { JourneyDefinition, JourneyRun } from "@messagebirds/sdk";
+import type { JourneyDefinition, JourneyRun } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 import { startJourney } from "../actions";
 

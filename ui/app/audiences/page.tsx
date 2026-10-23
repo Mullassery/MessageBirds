@@ -1,4 +1,4 @@
-import type { AudienceDefinition, Destination } from "@messagebirds/sdk";
+import type { AudienceDefinition, Destination } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 import { activateAudience, createAudience, createDestination } from "./actions";
 

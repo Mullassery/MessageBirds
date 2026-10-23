@@ -1,5 +1,5 @@
 [package]
-name = "mb-audiences"
+name = "pch-audiences"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

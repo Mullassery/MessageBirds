@@ -12,7 +12,10 @@ use std::env;
 /// re-hash migration would be required). See `SECURITY.md` for the threat
 /// this mitigates (precomputed-dictionary attacks against low-entropy
 /// values like email/phone) and its limits.
-pub const HASH_PEPPER_ENV_VAR: &str = "MB_IDENTITY_HASH_PEPPER";
+pub const HASH_PEPPER_ENV_VAR: &str = "PYCUSTOMERHUB_IDENTITY_HASH_PEPPER";
+
+/// Pre-rebrand name for [`HASH_PEPPER_ENV_VAR`], still read as a fallback.
+pub const LEGACY_HASH_PEPPER_ENV_VAR: &str = "MB_IDENTITY_HASH_PEPPER";
 
 /// Identity values are stored hashed, never in the clear — the identity
 /// graph only needs equality, not the raw email/phone/etc.
@@ -32,7 +35,9 @@ pub fn hash_value(namespace: &str, value: &str) -> String {
 }
 
 fn pepper_from_env() -> String {
-    env::var(HASH_PEPPER_ENV_VAR).unwrap_or_default()
+    env::var(HASH_PEPPER_ENV_VAR)
+        .or_else(|_| env::var(LEGACY_HASH_PEPPER_ENV_VAR))
+        .unwrap_or_default()
 }
 
 /// Pepper-parameterized core of [`hash_value`], split out so tests can
@@ -86,7 +91,7 @@ mod tests {
 
     #[test]
     fn empty_pepper_matches_unpeppered_legacy_behavior() {
-        // Deployments that never set `MB_IDENTITY_HASH_PEPPER` must keep
+        // Deployments that never set `PYCUSTOMERHUB_IDENTITY_HASH_PEPPER` must keep
         // resolving the same hashes they already wrote before this change:
         // byte-for-byte `SHA256(namespace || ":" || value)`, no pepper
         // prefix at all.

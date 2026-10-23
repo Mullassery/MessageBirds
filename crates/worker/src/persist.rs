@@ -1,4 +1,4 @@
-use mb_core::EventEnvelope;
+use pch_core::EventEnvelope;
 use sqlx::PgPool;
 use uuid::Uuid;
 

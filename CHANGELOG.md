@@ -7,6 +7,37 @@ backfilled here beyond what's independently verifiable from `git log` and `docs/
 see those for the detailed phase-by-phase narrative; this file is intentionally a summary, not a
 duplicate.
 
+## [Unreleased]
+
+### Added
+- HTTP tracking-source compatibility: `/v1/track`, `/v1/identify`,
+  `/v1/page`, `/v1/screen`, `/v1/group`, `/v1/alias`, and `/v1/batch`
+  translate the common analytics HTTP shape into canonical OCDS events.
+  Write keys map to tenants via `PYCUSTOMERHUB_HTTP_WRITE_KEYS`; the
+  source fails closed when unconfigured. `identify` traits update the
+  standard contact/person mixins, while unknown context is preserved.
+- Squid envelope-v1 webhook ingestion at `POST /v1/squid`: HMAC-SHA256
+  verification over the raw body, workspace→tenant mapping via
+  `PYCUSTOMERHUB_SQUID_WORKSPACES` (single or multiple per-webhook secrets),
+  explicit OCDS field mapping, and registered `squid.*` schemas for
+  person/company/opportunity/task/note events. Person traits update standard
+  mixins; other objects remain event data and context.
+- Edge gateway write-key authentication via
+  `PYCUSTOMERHUB_EDGE_WRITE_KEYS`: validates `X-Write-Key`, bearer auth, or
+  the legacy `tenant_id` credential, rewrites `tenant_id` to the mapped
+  tenant, and fails closed when unconfigured.
+- Shared destination delivery policy: configurable retries with capped
+  exponential backoff for transient transport/HTTP failures, plus optional
+  `rate_limit_per_second` pacing during activation.
+
+### Changed
+- Renamed the project from MessageBirds to PyCustomerHub: Rust crates/imports
+  are `pch-*`/`pch_*`, npm packages are scoped `@pycustomerhub/*`, the Python
+  package is `pycustomerhub`, and environment variables use
+  `PYCUSTOMERHUB_*`. Legacy MessageBirds environment variables, SSO group
+  names, SDK storage keys, and the Python import package are accepted as
+  deprecated compatibility fallbacks.
+
 ## [0.8.0] - 2026-10-19
 
 ### Added

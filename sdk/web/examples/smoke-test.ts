@@ -6,25 +6,31 @@
  *   -> Kafka -> worker -> GET /profiles/by-identity
  *
  * Runs in Node (no browser), so storage/fetch are injected explicitly —
- * exactly the seam `MessageBirdsWebAnalyticsOptions.storage`/`fetchImpl`
- * exist for. Point `MESSAGEBIRDS_API_URL` at the edge gateway
+ * exactly the seam `PyCustomerHubWebAnalyticsOptions.storage`/`fetchImpl`
+ * exist for. Point `PYCUSTOMERHUB_API_URL` at the edge gateway
  * (`edge/ingest-gateway`, via `wrangler dev`) to also prove CORS/validation
- * forwarding works, or straight at `mb-api` to test the SDK alone.
+ * forwarding works, or straight at `pch-api` to test the SDK alone.
  *
  * Run against a live stack: `docker compose up -d postgres redpanda`,
- * `cargo run -p api`, `cargo run -p worker`, then `npm run smoke-test`.
+ * `cargo run -p pch-api`, `cargo run -p pch-worker`, then `npm run smoke-test`.
  */
 import { randomUUID } from "node:crypto";
-import type { ProfileView } from "@messagebirds/sdk";
-import { InMemoryStorage, MessageBirdsWebAnalytics } from "../src/index.js";
+import type { ProfileView } from "@pycustomerhub/sdk";
+import { InMemoryStorage, PyCustomerHubWebAnalytics } from "../src/index.js";
 
-const apiUrl = process.env.MESSAGEBIRDS_API_URL ?? "http://localhost:8080";
+const apiUrl =
+  process.env.PYCUSTOMERHUB_API_URL ??
+  process.env.MESSAGEBIRDS_API_URL ??
+  "http://localhost:8080";
 // The SDK only ever POSTs events through `apiUrl` (which may be the edge
 // ingestion gateway — it proxies POST /events only). Reading the profile
 // back to verify is a server-side/ops concern, same as `ui/`'s direct
-// calls to `mb-api` — it always goes straight to the origin, not through
+// calls to `pch-api` — it always goes straight to the origin, not through
 // the ingestion-only gateway.
-const verifyApiUrl = process.env.MESSAGEBIRDS_VERIFY_API_URL ?? "http://localhost:8080";
+const verifyApiUrl =
+  process.env.PYCUSTOMERHUB_VERIFY_API_URL ??
+  process.env.MESSAGEBIRDS_VERIFY_API_URL ??
+  "http://localhost:8080";
 const tenantId = randomUUID();
 
 function sleep(ms: number): Promise<void> {
@@ -40,7 +46,7 @@ async function findProfileByIdentity(namespace: string, value: string): Promise<
 }
 
 async function main() {
-  const analytics = new MessageBirdsWebAnalytics({
+  const analytics = new PyCustomerHubWebAnalytics({
     writeKey: tenantId,
     apiUrl,
     storage: new InMemoryStorage(),

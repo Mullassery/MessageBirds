@@ -4,7 +4,7 @@ use axum::Json;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use mb_audiences::{AudienceDefinition, AudienceRepo, Condition, Membership};
+use pch_audiences::{AudienceDefinition, AudienceRepo, Condition, Membership};
 
 use crate::error::ApiError;
 use crate::state::AppState;

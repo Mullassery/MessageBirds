@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use thiserror::Error;
 use uuid::Uuid;
 
-use mb_schema_registry::FieldDef;
+use pch_schema_registry::FieldDef;
 
 use crate::model::{MixinDef, MixinRow};
 

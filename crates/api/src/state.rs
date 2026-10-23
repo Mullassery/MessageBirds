@@ -1,20 +1,22 @@
 use sqlx::PgPool;
 use std::sync::Arc;
 
-use mb_audiences::PgAudienceRepo;
-use mb_channels::PgChannelRepo;
-use mb_connectors::{HubspotConnector, KlaviyoConnector, PgConnectorRepo, WebhookConnector};
-use mb_events::EventProducer;
-use mb_governance::PgGovernanceRepo;
-use mb_identity::PgIdentityRepo;
-use mb_journeys::PgJourneyRepo;
-use mb_mixins::PgMixinRepo;
-use mb_namespaces::PgNamespaceRepo;
-use mb_profile::PgProfileRepo;
-use mb_schema_registry::PgSchemaRepo;
-use mb_templates::PgTemplateRepo;
+use pch_audiences::PgAudienceRepo;
+use pch_channels::PgChannelRepo;
+use pch_connectors::{HubspotConnector, KlaviyoConnector, PgConnectorRepo, WebhookConnector};
+use pch_events::EventProducer;
+use pch_governance::PgGovernanceRepo;
+use pch_identity::PgIdentityRepo;
+use pch_journeys::PgJourneyRepo;
+use pch_mixins::PgMixinRepo;
+use pch_namespaces::PgNamespaceRepo;
+use pch_profile::PgProfileRepo;
+use pch_schema_registry::PgSchemaRepo;
+use pch_templates::PgTemplateRepo;
 
 use crate::auth::ApiKeyAuth;
+use crate::http_source::HttpWriteKeys;
+use crate::squid_source::SquidWorkspaces;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -40,6 +42,12 @@ pub struct AppState {
     pub templates: Arc<PgTemplateRepo>,
     /// Implements both `JourneyRepo` and `ContactPolicyRepo`.
     pub journeys: Arc<PgJourneyRepo>,
-    /// Optional single-key API gate. Disabled when `MESSAGEBIRDS_API_KEY` is unset.
+    /// Optional single-key API gate. Disabled when `PYCUSTOMERHUB_API_KEY` is unset.
     pub auth: ApiKeyAuth,
+    /// Write-key -> tenant mapping for `/v1/*` tracking endpoints. These
+    /// routes are deliberately outside the admin bearer-token gate; the
+    /// write key is their authentication.
+    pub http_write_keys: HttpWriteKeys,
+    /// Squid workspace -> tenant/secret mapping for signed record webhooks.
+    pub squid_workspaces: SquidWorkspaces,
 }

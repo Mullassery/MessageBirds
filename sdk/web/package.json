@@ -1,5 +1,5 @@
 {
-  "name": "@messagebirds/web",
+  "name": "@pycustomerhub/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "smoke-test": "tsx examples/smoke-test.ts"
   },
   "dependencies": {
-    "@messagebirds/sdk": "*"
+    "@pycustomerhub/sdk": "*"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

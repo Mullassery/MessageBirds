@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata = {
-  title: "MessageBirds",
+  title: "PyCustomerHub",
   description: "Profile timeline viewer",
 };
 
@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <header>
           <h1>
-            <a href="/">MessageBirds</a>
+            <a href="/">PyCustomerHub</a>
           </h1>
           <p className="muted">
             Profile lookup · <a href="/audiences">Audiences</a> ·{" "}

@@ -1,4 +1,4 @@
-import type { Policy } from "@messagebirds/sdk";
+import type { Policy } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 import { createPolicy } from "./actions";
 

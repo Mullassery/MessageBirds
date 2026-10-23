@@ -1,4 +1,4 @@
-import type { EventDetail, MixinDef, ProfileView, SchemaDefinition } from "@messagebirds/sdk";
+import type { EventDetail, MixinDef, ProfileView, SchemaDefinition } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 
 /** `"core/person@1.0"` -> `{namespace: "core", name: "person", version: "1.0"}`. */

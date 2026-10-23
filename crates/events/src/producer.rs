@@ -3,7 +3,7 @@ use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::Timeout;
 use std::time::Duration;
 
-use mb_core::EventEnvelope;
+use pch_core::EventEnvelope;
 
 use crate::error::EventsError;
 
@@ -56,7 +56,7 @@ fn partition_key(envelope: &EventEnvelope) -> String {
 mod tests {
     use super::*;
     use chrono::Utc;
-    use mb_core::{EventSource, IdentityRef, SchemaRef, TenantId};
+    use pch_core::{EventSource, IdentityRef, SchemaRef, TenantId};
     use uuid::Uuid;
 
     fn envelope(identities: Vec<IdentityRef>) -> EventEnvelope {

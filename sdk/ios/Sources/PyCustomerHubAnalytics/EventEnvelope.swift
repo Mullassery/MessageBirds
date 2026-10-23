@@ -1,6 +1,6 @@
 import Foundation
 
-/// Mirrors `mb_core::IdentityRef` (see `sdk/js/src/types.ts`, `sdk/python/src/messagebirds/types.py`).
+/// Mirrors `pch_core::IdentityRef` (see `sdk/js/src/types.ts`, `sdk/python/src/pycustomerhub/types.py`).
 public struct IdentityRef: Codable, Equatable {
     public let namespace: String
     public let value: String
@@ -17,7 +17,7 @@ public struct IdentityRef: Codable, Equatable {
     }
 }
 
-/// Mirrors `mb_core::EventSource`.
+/// Mirrors `pch_core::EventSource`.
 public struct EventSource: Codable, Equatable {
     public let type: String
     public let name: String
@@ -28,7 +28,7 @@ public struct EventSource: Codable, Equatable {
     }
 }
 
-/// Mirrors `mb_core::SchemaRef`.
+/// Mirrors `pch_core::SchemaRef`.
 public struct SchemaRef: Codable, Equatable {
     public let name: String
     public let version: String
@@ -82,7 +82,7 @@ public enum JSONValue: Codable, Equatable {
     }
 }
 
-/// Mirrors `mb_core::EventEnvelope` — the JSON body `POST /events` expects.
+/// Mirrors `pch_core::EventEnvelope` — the JSON body `POST /events` expects.
 public struct EventEnvelope: Codable, Equatable {
     public let event_id: String
     public let event_type: String

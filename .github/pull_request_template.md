@@ -15,7 +15,7 @@ State plainly which of these you did, and don't describe untested code as workin
 -->
 
 - [ ] Ran the relevant test suite (`cargo test -p <crate>`, `npm run test --workspace=<pkg>`,
-      `pytest sdk/python`, `swift test`/`swift run mb-verify`) — paste the actual output below
+      `pytest sdk/python`, `swift test`/`swift run pch-verify`) — paste the actual output below
 - [ ] Added/updated tests covering the change
 - [ ] Manually verified end to end (describe exactly what you ran and observed)
 - [ ] Not tested (explain why, and what risk that leaves)

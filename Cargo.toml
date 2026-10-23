@@ -25,7 +25,7 @@ members = [
 version = "0.8.0"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/Mullassery/MessageBirds"
+repository = "https://github.com/Mullassery/PyCustomerHub"
 
 [workspace.dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -43,17 +43,17 @@ sqlx = { version = "0.8.1", features = ["runtime-tokio", "postgres", "uuid", "ch
 axum = "0.7"
 rdkafka = { version = "0.36", features = ["cmake-build"] }
 
-mb-core = { path = "crates/core" }
-mb-namespaces = { path = "crates/namespaces" }
-mb-schema-registry = { path = "crates/schema-registry" }
-mb-mixins = { path = "crates/mixins" }
-mb-identity = { path = "crates/identity" }
-mb-merge-policy = { path = "crates/merge-policy" }
-mb-profile = { path = "crates/profile" }
-mb-events = { path = "crates/events" }
-mb-audiences = { path = "crates/audiences" }
-mb-connectors = { path = "crates/connectors" }
-mb-governance = { path = "crates/governance" }
-mb-channels = { path = "crates/channels" }
-mb-templates = { path = "crates/templates" }
-mb-journeys = { path = "crates/journeys" }
+pch-core = { path = "crates/core" }
+pch-namespaces = { path = "crates/namespaces" }
+pch-schema-registry = { path = "crates/schema-registry" }
+pch-mixins = { path = "crates/mixins" }
+pch-identity = { path = "crates/identity" }
+pch-merge-policy = { path = "crates/merge-policy" }
+pch-profile = { path = "crates/profile" }
+pch-events = { path = "crates/events" }
+pch-audiences = { path = "crates/audiences" }
+pch-connectors = { path = "crates/connectors" }
+pch-governance = { path = "crates/governance" }
+pch-channels = { path = "crates/channels" }
+pch-templates = { path = "crates/templates" }
+pch-journeys = { path = "crates/journeys" }

@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "messagebirds-android"
+rootProject.name = "pycustomerhub-android"

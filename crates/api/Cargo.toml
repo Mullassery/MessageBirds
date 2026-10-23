@@ -1,5 +1,5 @@
 [package]
-name = "mb-api"
+name = "pch-api"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -10,23 +10,27 @@ name = "api"
 path = "src/main.rs"
 
 [dependencies]
-mb-core.workspace = true
-mb-identity.workspace = true
-mb-namespaces.workspace = true
-mb-schema-registry.workspace = true
-mb-mixins.workspace = true
-mb-profile.workspace = true
-mb-events.workspace = true
-mb-audiences.workspace = true
-mb-connectors.workspace = true
-mb-governance.workspace = true
-mb-channels.workspace = true
-mb-templates.workspace = true
-mb-journeys.workspace = true
+pch-core.workspace = true
+pch-identity.workspace = true
+pch-namespaces.workspace = true
+pch-schema-registry.workspace = true
+pch-mixins.workspace = true
+pch-profile.workspace = true
+pch-events.workspace = true
+pch-audiences.workspace = true
+pch-connectors.workspace = true
+pch-governance.workspace = true
+pch-channels.workspace = true
+pch-templates.workspace = true
+pch-journeys.workspace = true
 tokio.workspace = true
 axum.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+base64 = "0.22"
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
 uuid.workspace = true
 chrono.workspace = true
 thiserror.workspace = true

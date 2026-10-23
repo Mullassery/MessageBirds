@@ -1,4 +1,4 @@
-//! Canonical domain types shared across MessageBirds services.
+//! Canonical domain types shared across PyCustomerHub services.
 //!
 //! This crate has no I/O: it defines the shapes that flow through the
 //! platform (events, identity references, schema/mixin references, tenancy

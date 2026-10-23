@@ -1,10 +1,10 @@
 import Foundation
-import MessageBirdsAnalytics
+import PyCustomerHubAnalytics
 
-// Exercises `MessageBirdsAnalytics`'s public contract with plain
-// `assert`s — see the comment on the `mb-verify` target in Package.swift
+// Exercises `PyCustomerHubAnalytics`'s public contract with plain
+// `assert`s — see the comment on the `pch-verify` target in Package.swift
 // for why this exists alongside (not instead of) the XCTest/swift-testing
-// suite in Tests/MessageBirdsAnalyticsTests.
+// suite in Tests/PyCustomerHubAnalyticsTests.
 
 final class StubURLProtocol: URLProtocol {
     static var handler: (@Sendable (URLRequest) -> (Int, Data?))?
@@ -54,7 +54,7 @@ final class RequestLog: @unchecked Sendable {
 }
 
 func tempFileURL() -> URL {
-    FileManager.default.temporaryDirectory.appendingPathComponent("mb-verify-\(UUID().uuidString).json")
+    FileManager.default.temporaryDirectory.appendingPathComponent("pch-verify-\(UUID().uuidString).json")
 }
 
 func check(_ label: String, _ condition: Bool) {
@@ -72,8 +72,8 @@ StubURLProtocol.handler = { request in
     return (200, Data(#"{"event_id":"ignored"}"#.utf8))
 }
 
-let defaults = UserDefaults(suiteName: "mb-verify-\(UUID().uuidString)")!
-let analytics = MessageBirdsAnalytics(
+let defaults = UserDefaults(suiteName: "pch-verify-\(UUID().uuidString)")!
+let analytics = PyCustomerHubAnalytics(
     writeKey: "tenant-1",
     apiUrl: "http://localhost:8080",
     queueFileURL: tempFileURL(),
@@ -91,7 +91,7 @@ if let last = log.last {
     check("request method is POST", last.httpMethod == "POST")
 }
 
-let secondClient = MessageBirdsAnalytics(
+let secondClient = PyCustomerHubAnalytics(
     writeKey: "tenant-1",
     apiUrl: "http://localhost:8080",
     queueFileURL: tempFileURL(),
@@ -101,7 +101,7 @@ let secondClient = MessageBirdsAnalytics(
 _ = secondClient
 check(
     "anonymous id persisted across instances sharing UserDefaults",
-    defaults.string(forKey: "messagebirds.anonymous_id") != nil
+    defaults.string(forKey: "pycustomerhub.anonymous_id") != nil
 )
 
-print("\n[mb-verify] ALL CHECKS PASSED")
+print("\n[pch-verify] ALL CHECKS PASSED")

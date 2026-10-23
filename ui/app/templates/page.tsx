@@ -1,4 +1,4 @@
-import type { MessageTemplate } from "@messagebirds/sdk";
+import type { MessageTemplate } from "@pycustomerhub/sdk";
 import { apiFetch } from "@/lib/api";
 import { createTemplate } from "./actions";
 

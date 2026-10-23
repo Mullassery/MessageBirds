@@ -959,296 +959,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e7465ac9959cc2b1404e8e2367b43684a6d13790fe23056cc8c6c5a6b7bcb94"
 
 [[package]]
-name = "mb-api"
-version = "0.8.0"
-dependencies = [
- "anyhow",
- "axum",
- "chrono",
- "mb-audiences",
- "mb-channels",
- "mb-connectors",
- "mb-core",
- "mb-events",
- "mb-governance",
- "mb-identity",
- "mb-journeys",
- "mb-mixins",
- "mb-namespaces",
- "mb-profile",
- "mb-schema-registry",
- "mb-templates",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
-name = "mb-audiences"
-version = "0.8.0"
-dependencies = [
- "async-recursion",
- "async-trait",
- "chrono",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-channels"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "mb-net-guard",
- "reqwest",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-connectors"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "mb-net-guard",
- "reqwest",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-core"
-version = "0.8.0"
-dependencies = [
- "chrono",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
- "uuid",
-]
-
-[[package]]
-name = "mb-events"
-version = "0.8.0"
-dependencies = [
- "chrono",
- "mb-core",
- "rdkafka",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "mb-governance"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-identity"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "mb-core",
- "serde",
- "serde_json",
- "sha2",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-journeys"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "mb-audiences",
- "mb-channels",
- "mb-profile",
- "mb-templates",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-journeys-worker"
-version = "0.8.0"
-dependencies = [
- "anyhow",
- "mb-channels",
- "mb-journeys",
- "mb-profile",
- "mb-templates",
- "sqlx",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "mb-merge-policy"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-mixins"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "mb-schema-registry",
- "serde",
- "serde_json",
- "serde_yaml",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-namespaces"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "serde",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-net-guard"
-version = "0.8.0"
-dependencies = [
- "reqwest",
- "thiserror 1.0.69",
- "tokio",
- "url",
-]
-
-[[package]]
-name = "mb-profile"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "mb-merge-policy",
- "serde",
- "serde_json",
- "sqlx",
- "strsim",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-schema-registry"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-templates"
-version = "0.8.0"
-dependencies = [
- "async-trait",
- "chrono",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "mb-worker"
-version = "0.8.0"
-dependencies = [
- "anyhow",
- "chrono",
- "mb-audiences",
- "mb-channels",
- "mb-core",
- "mb-events",
- "mb-identity",
- "mb-journeys",
- "mb-merge-policy",
- "mb-mixins",
- "mb-profile",
- "mb-schema-registry",
- "mb-templates",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
 name = "md-5"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1390,6 +1100,300 @@ dependencies = [
  "redox_syscall 0.5.18",
  "smallvec",
  "windows-link",
+]
+
+[[package]]
+name = "pch-api"
+version = "0.8.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64",
+ "chrono",
+ "hex",
+ "hmac",
+ "pch-audiences",
+ "pch-channels",
+ "pch-connectors",
+ "pch-core",
+ "pch-events",
+ "pch-governance",
+ "pch-identity",
+ "pch-journeys",
+ "pch-mixins",
+ "pch-namespaces",
+ "pch-profile",
+ "pch-schema-registry",
+ "pch-templates",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "pch-audiences"
+version = "0.8.0"
+dependencies = [
+ "async-recursion",
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-channels"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "pch-net-guard",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-connectors"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "pch-net-guard",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-core"
+version = "0.8.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "uuid",
+]
+
+[[package]]
+name = "pch-events"
+version = "0.8.0"
+dependencies = [
+ "chrono",
+ "pch-core",
+ "rdkafka",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "pch-governance"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-identity"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "pch-core",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-journeys"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "pch-audiences",
+ "pch-channels",
+ "pch-profile",
+ "pch-templates",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-journeys-worker"
+version = "0.8.0"
+dependencies = [
+ "anyhow",
+ "pch-channels",
+ "pch-journeys",
+ "pch-profile",
+ "pch-templates",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "pch-merge-policy"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-mixins"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "pch-schema-registry",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-namespaces"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-net-guard"
+version = "0.8.0"
+dependencies = [
+ "reqwest",
+ "thiserror 1.0.69",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "pch-profile"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "pch-merge-policy",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "strsim",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-schema-registry"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-templates"
+version = "0.8.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "pch-worker"
+version = "0.8.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "pch-audiences",
+ "pch-channels",
+ "pch-core",
+ "pch-events",
+ "pch-identity",
+ "pch-journeys",
+ "pch-merge-policy",
+ "pch-mixins",
+ "pch-profile",
+ "pch-schema-registry",
+ "pch-templates",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

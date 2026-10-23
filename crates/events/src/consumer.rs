@@ -3,7 +3,7 @@ use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
 use rdkafka::topic_partition_list::{Offset, TopicPartitionList};
 use rdkafka::Message;
 
-use mb_core::EventEnvelope;
+use pch_core::EventEnvelope;
 
 use crate::error::EventsError;
 

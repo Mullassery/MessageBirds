@@ -1,4 +1,4 @@
-# Contributing to MessageBirds
+# Contributing to PyCustomerHub
 
 Thanks for considering a contribution. This is a solo-maintained, pre-1.0 project — expect the
 architecture to still move, and expect review to take a few days on a best-effort basis rather
@@ -28,8 +28,8 @@ increments) and it's easier to agree on scope before the diff exists than after.
 
 ```bash
 docker compose up -d postgres redpanda
-DATABASE_URL=postgres://messagebirds:messagebirds@localhost:5432/messagebirds cargo run -p api
-DATABASE_URL=postgres://messagebirds:messagebirds@localhost:5432/messagebirds cargo run -p worker
+DATABASE_URL=postgres://pycustomerhub:pycustomerhub@localhost:5432/pycustomerhub cargo run -p pch-api
+DATABASE_URL=postgres://pycustomerhub:pycustomerhub@localhost:5432/pycustomerhub cargo run -p pch-worker
 npm install
 ```
 
@@ -56,7 +56,7 @@ pip install -e "./sdk/python[dev]"
 pytest sdk/python
 
 # iOS (needs a Mac with full Xcode.app, not just Command Line Tools)
-cd sdk/ios && swift build && swift test && swift run mb-verify
+cd sdk/ios && swift build && swift test && swift run pch-verify
 ```
 
 `sdk/android` has no CI job yet — there's no Gradle/Android SDK available to run one against.

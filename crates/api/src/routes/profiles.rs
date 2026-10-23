@@ -4,9 +4,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use mb_audiences::{AudienceRepo, Membership};
-use mb_identity::{IdentityAuditEntry, IdentityNode, IdentityRepo};
-use mb_profile::{FieldProvenance, PersonSignal, Profile, ProfileRepo};
+use pch_audiences::{AudienceRepo, Membership};
+use pch_identity::{IdentityAuditEntry, IdentityNode, IdentityRepo};
+use pch_profile::{FieldProvenance, PersonSignal, Profile, ProfileRepo};
 
 use crate::error::ApiError;
 use crate::state::AppState;
@@ -127,7 +127,7 @@ pub async fn get_profile_identity(
     Ok(Json(IdentityView { nodes, audit }))
 }
 
-/// Pulls the signals `mb_profile::similarity::score` compares out of a
+/// Pulls the signals `pch_profile::similarity::score` compares out of a
 /// profile's composed mixins. Absent fields just mean that half of the
 /// score contributes 0 — see `score`'s doc comment.
 fn extract_signal(mixins: &serde_json::Value) -> PersonSignal {
@@ -200,7 +200,7 @@ pub async fn get_merge_suggestions(
             let candidate_signal = extract_signal(&c.mixins);
             MergeSuggestion {
                 profile_id: c.id,
-                score: mb_profile::score(&this_signal, &candidate_signal),
+                score: pch_profile::score(&this_signal, &candidate_signal),
             }
         })
         .filter(|s| s.score > 0.3)

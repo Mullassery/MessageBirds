@@ -1,5 +1,5 @@
 [package]
-name = "mb-worker"
+name = "pch-worker"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -10,17 +10,17 @@ name = "worker"
 path = "src/main.rs"
 
 [dependencies]
-mb-core.workspace = true
-mb-events.workspace = true
-mb-schema-registry.workspace = true
-mb-mixins.workspace = true
-mb-identity.workspace = true
-mb-merge-policy.workspace = true
-mb-profile.workspace = true
-mb-audiences.workspace = true
-mb-journeys.workspace = true
-mb-channels.workspace = true
-mb-templates.workspace = true
+pch-core.workspace = true
+pch-events.workspace = true
+pch-schema-registry.workspace = true
+pch-mixins.workspace = true
+pch-identity.workspace = true
+pch-merge-policy.workspace = true
+pch-profile.workspace = true
+pch-audiences.workspace = true
+pch-journeys.workspace = true
+pch-channels.workspace = true
+pch-templates.workspace = true
 tokio.workspace = true
 serde.workspace = true
 serde_json.workspace = true

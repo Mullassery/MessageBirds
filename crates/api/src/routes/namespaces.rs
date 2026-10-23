@@ -1,7 +1,7 @@
 use axum::extract::State;
 use axum::Json;
 
-use mb_namespaces::{Namespace, NamespaceRepo};
+use pch_namespaces::{Namespace, NamespaceRepo};
 
 use crate::error::ApiError;
 use crate::state::AppState;

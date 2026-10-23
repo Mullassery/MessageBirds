@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import type { ActivationSummary, AttributeOp, Condition } from "@messagebirds/sdk";
+import type { ActivationSummary, AttributeOp, Condition } from "@pycustomerhub/sdk";
 import { apiFetch, ApiError } from "@/lib/api";
 
 function parseAttributeValue(raw: FormDataEntryValue | null): unknown {

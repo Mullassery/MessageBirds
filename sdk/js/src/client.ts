@@ -1,6 +1,6 @@
 import type { EventEnvelope, ProfileView } from "./types.js";
 
-export interface MessageBirdsClientOptions {
+export interface PyCustomerHubClientOptions {
   baseUrl: string;
 }
 
@@ -14,10 +14,10 @@ export class ApiError extends Error {
   }
 }
 
-export class MessageBirdsClient {
+export class PyCustomerHubClient {
   private readonly baseUrl: string;
 
-  constructor(options: MessageBirdsClientOptions) {
+  constructor(options: PyCustomerHubClientOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, "");
   }
 
