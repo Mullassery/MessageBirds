@@ -97,7 +97,8 @@ pub fn is_retryable(error: &ConnectorError) -> bool {
         }
         ConnectorError::InvalidConfig(_)
         | ConnectorError::InvalidPayload(_)
-        | ConnectorError::UnsafeUrl(_) => false,
+        | ConnectorError::UnsafeUrl(_)
+        | ConnectorError::Serialization(_) => false,
     }
 }
 

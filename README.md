@@ -274,6 +274,7 @@ Delivery policy is configured per destination and applies to every connector:
 
 ```json
 {
+  "signing_secret": "whsec_...",
   "retry": {
     "max_attempts": 3,
     "initial_backoff_ms": 250,
@@ -287,6 +288,16 @@ Transient transport failures, timeouts, HTTP 408/425/429, and 5xx responses
 retry with exponential backoff; validation/config/auth failures fail
 immediately. `rate_limit_per_second` paces sends within an activation run.
 
+When `signing_secret` is set, webhook deliveries include:
+
+- `x-pch-delivery`: unique delivery UUID for receiver-side deduplication
+- `x-pch-timestamp`: Unix seconds; reject stale timestamps
+- `x-pch-signature: sha256=<hex>` over `delivery_id + "." + timestamp + "." + raw_body`
+- `x-pch-signature-version: v1`
+
+Receivers must verify the exact raw body, enforce a bounded clock skew, and
+dedupe on the delivery UUID. Key rotation is a config change on both sides.
+
 ## Roadmap
 
 No dates or guarantees — this is the integration-first order of work, not a promise list.
@@ -297,7 +308,7 @@ No dates or guarantees — this is the integration-first order of work, not a pr
 - **Batch-aware first-party SDKs:** use `/v1/batch` for queued flushes instead of one request per event.
 - **Connector test harness:** recorded request/response fixtures and contract tests so new adapters are verified consistently.
 - **Production deployment:** Helm/Kubernetes manifests, readiness/liveness separation, Prometheus/OpenTelemetry metrics, and alerting.
-- **Webhook hardening:** signing secrets, rotation, and replay protection for outbound webhook destinations.
+- **Webhook key rotation:** signing, delivery IDs, and timestamps are implemented; add rotation and a reference receiver.
 
 **Next (platform depth):**
 - **User-defined transformations:** versioned, previewable transforms for field mapping, filtering, enrichment, and PII masking before delivery.

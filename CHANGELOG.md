@@ -29,6 +29,10 @@ duplicate.
 - Shared destination delivery policy: configurable retries with capped
   exponential backoff for transient transport/HTTP failures, plus optional
   `rate_limit_per_second` pacing during activation.
+- Signed webhook deliveries: optional `signing_secret` adds
+  `x-pch-delivery`, `x-pch-timestamp`, and an HMAC-SHA256
+  `x-pch-signature` over the delivery id, timestamp, and exact raw body.
+  Receivers can verify freshness and dedupe deliveries.
 
 ### Changed
 - Renamed the project from MessageBirds to PyCustomerHub: Rust crates/imports
